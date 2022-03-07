@@ -29,7 +29,7 @@ if __name__=='__main__':
         create_script= '''CREATE TABLE zaposleni(
                                 id  int PRIMARY KEY,
                                 ime varchar(40) NOT NULL,
-                                plata   int,
+                                plata int,
                                 dept_id varchar(30))'''
     
         cur.execute(create_script)
