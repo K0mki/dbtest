@@ -9,7 +9,7 @@ if len(sys.argv)<2:
 try:
     decimal = int(sys.argv[1])
 except:
-    print(f'invalid parameter, use integer')
+    print(f'invalid parameter, please use integer')
     sys.exit()
     
 cetrespetadecimal = ''
