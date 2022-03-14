@@ -1,6 +1,7 @@
 import unittest
 
-from . import cvt
+import cvt
+
 
 class TestConvertFromDecimal(unittest.TestCase):
     def test_cvt_FF_in_16_expected_255(self):

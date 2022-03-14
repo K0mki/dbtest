@@ -1,13 +1,16 @@
-class ExceptionNumberMustBePositive(BaseException):
-    pass
+class ExceptionNumberMustBePositive(Exception):
+    def __str__(self):
+        return 'ExceptionNumberMustBePositive'
 
 
-class ExceptionCharacterIsNotValid(BaseException):
-    pass
+class ExceptionCharacterIsNotValid(Exception):
+    def __str__(self):
+        return 'ExceptionCharacterIsNotValid'
 
 
-class ExceptionInvalidTargetRange(BaseException):
-    pass
+class ExceptionInvalidTargetRange(Exception):
+    def __str__(self):
+        return 'ExceptionInvalidTargetRange'
 
 
 alphabet = ''.join([str(x) for x in range(0, 10)]) + \
