@@ -57,5 +57,17 @@ class TestCvtToDecimal(unittest.TestCase):
             convert_from_decimal(255, 1)
 
 
+class TestConvertFromDecimalToXAndReturnToDecimal(unittest.TestCase):
+
+    def test1(self):
+        # This is not recommended practice because we need test to test this program, but it is commonly used in development
+
+        for i in range(0, 300):
+            res = convert_from_decimal(i)
+            res2 = convert_to_decimal(res)
+            self.assertEqual(res2, i)
+            # print(i, res, res2)
+
+
 if __name__ == '__main__':
     unittest.main()
