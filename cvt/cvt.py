@@ -26,15 +26,3 @@ def convert_from_decimal(number, target=16):
     return res  # res[::-1]
 
 
-if __name__ == '__main__':
-    assert (convert_from_decimal(255) == 'FF')
-    assert (convert_from_decimal(100) == '64')
-    assert (convert_from_decimal(200) == 'C8')
-    assert (convert_from_decimal(222) == 'DE')
-    assert (convert_from_decimal(0) == '0')
-    assert (convert_from_decimal(255, 8) == '377')
-    assert (convert_from_decimal(255, 45) == '5U')
-    assert (not convert_from_decimal(255, 345))
-    assert (not convert_from_decimal(-255, 16))
-    assert (not convert_from_decimal(255, -16))
-    assert (not convert_from_decimal(255, 1))
