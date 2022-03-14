@@ -14,11 +14,7 @@ alphabet = ''.join([str(x) for x in range(0, 10)]) + \
            ''.join([chr(x) for x in range(ord('A'), ord('Z') + 1)]) + \
            ''.join([chr(x) for x in range(ord('a'), ord('z') + 1)])
 
-m_alphabet = {}
-pos = -1
-for l in alphabet:
-    pos += 1
-    m_alphabet[l] = pos
+m_alphabet = {alpha[1]: alpha[0] for alpha in enumerate(alphabet)}
 
 
 def convert_to_decimal(number: str, source=16):
