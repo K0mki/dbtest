@@ -80,8 +80,8 @@ if __name__=='__main__':
     # update_contact( 'Mario','Mariooo', '065613131231', 30)
     # contact=add_contact('Ana2', 'Anic', '0651234576')
     # print(contact)   
-    contacts=all_contacts('first_name')
-    print(contacts)
+    # contacts=all_contacts('first_name')
+    # print(contacts)
     
 
 
