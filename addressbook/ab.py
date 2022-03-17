@@ -1,3 +1,4 @@
+import sys
 import psycopg2
 import yaml
 import argparse
@@ -58,12 +59,12 @@ def all_contacts(order_by):
     '''    
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute('SELECT * FROM addressbook ORDER BY %s'%order_by) 
-    i = curr.fetchall()
-    conn.commit()
-    
-    return i
-
+    curr.execute('SELECT id, first_name, last_name, phone_number FROM addressbook ORDER BY %s'%order_by) 
+    all = curr.fetchall()
+    for c in all:
+        print(f'{c[0]:>5} {c[1]:<30} {c[2]:<30} {c[3]}')
+             
+        
 def remove_contact(id):
     '''
     remove added contact
@@ -76,9 +77,35 @@ def remove_contact(id):
 
 if __name__=='__main__':
 
+    '''
+    pytho3 ab.py [command] param1 param2 param3 ... [ params zavise od komande]
+    '''
+
+    if len(sys.argv)<2:
+        print('usage pytho3 ab.py command [param1] [param2] [param3]')
+        print('commands')
+        print('		-l, --list-all [order-by=first_name] show all contats')
+        print('		-a, --add {fname} {lname} {phone}    add person')
+        print('		-d, --delete {id}                    remove person by id')
+        print('		-s, --search {term}                  search by term')
+        print('')
+        sys.exit()
+
+    if sys.argv[1] in ('-l','--list-all'):
+        all_contacts('first_name')
+        sys.exit()
+
+    if sys.argv[1] in ('-a','--add'):
+        if len(sys.argv)!=5:
+            print('usage pytho3 ab.py -a fname lname phone')
+            sys.exit()
+        contact=add_contact(sys.argv[2],sys.argv[3],sys.argv[4])
+        print('id=',contact)
+        
+
     # remove_contact(38)
     # update_contact( 'Mario','Mariooo', '065613131231', 30)
-    # contact=add_contact('Ana2', 'Anic', '0651234576')
+    contact=add_contact('Ana2', 'Anic', '0651234576')
     # print(contact)   
     # contacts=all_contacts('first_name')
     # print(contacts)
