@@ -1,0 +1,8 @@
+
+db:
+  host: localhost        # ovo je ime hosta
+  user: stefan
+  password: 123
+  port: 5432 
+  database: addressbook
+    
