@@ -42,9 +42,9 @@ def update_contact(first_name, last_name, phone, id):
     conn = get_connection()
     curr = conn.cursor()
     curr.execute('update addressbook set first_name = %s , last_name = %s , phone_number =  %s where id = %s',(first_name, last_name, phone, id))
-    curr.commit()
+    conn.commit()
 
-    return print("PHONE BOOK UPDATED")
+    return print("Phone Book Updated!")
 
 def search_contacts(search_term):
     '''
@@ -80,26 +80,26 @@ def remove_contact(id):
     curr.execute('DELETE FROM addressbook WHERE id = %s'%id)
     conn.commit()
 
-    return print("REMOVED CONTACT %s"%id)
+    return print("Removed contact ID #%s"%id)
 
 if __name__=='__main__':
 
+    # update_contact('Mirko', 'Petric', '666444', 50)
+
     '''
-    pytho3 ab.py [command] param1 param2 param3 ... [ params zavise od komande]
+    pytho3 ab.py [command] param1 param2 param3 ... [params zavise od komande]
     '''
-    
-    # print(contact)   
-    # all_contacts('id')
-    # # search_contacts
+
     parser= argparse.ArgumentParser(description='Edit addressbook contacts')
 
-    parser.add_argument('-r','--remove', help='remove a contact by ID')
+    parser.add_argument('-r','--remove', help='remove a contact by ID', nargs=1)
     parser.add_argument('-a', '--add', metavar=('first name', 'last name','phone number'),help='add a contact', nargs=3)
     parser.add_argument('-l', '--list-all', action='store_true', help='show all contacts, sorted by provided argument')
     parser.add_argument('-u', '--update', help='update contact')
-    parser.add_argument('-s', '--search',  help='search my term')
-    parser.add_argument('-o', '--sort',  help='.', default='first_name')
-    parser.add_argument('-d', '--direction', help='.', default='asc', choices=['asc','desc'])
+    parser.add_argument('-s', '--search',  help='search by term')
+    
+    parser.add_argument('-o', '--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
+    parser.add_argument('-d', '--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
 
     parser.add_argument('-t', '--details', help='show details about user for provided id')
 
@@ -109,21 +109,34 @@ if __name__=='__main__':
 
     args=parser.parse_args()
        
-    if args.add:    
-        print('added id=',add_contact(*args.add))
+    if args.remove:
+        remove_contact(*args.remove)    #* ??
         sys.exit(0)
     
+    if args.add:    #Add contact
+        print('Added ID ',add_contact(*args.add))  
+        sys.exit(0)
+    
+    if args.update:
+        update_contact(*args.update)
+        sys.exit(0)
+
+    if args.search:
+        sys.exit(0)
+
     if args.list_all:
         try:
             all_contacts(args.sort, args.direction)
         except Exception as e:
             print(e)
             sys.exit(1)
-            
+        
         sys.exit(0)
         
+
     print('unknow command')
     sys.exit(1)
+
 
 #    if sys.argv[1] in ('-l','--list-all'):
 #        all_contacts('%s'%sys.argv[2])
