@@ -6,4 +6,3 @@ CREATE TABLE addressbook(
     last_name VARCHAR(128) NOT NULL,
     phone_number VARCHAR(128) NOT NULL
 );
-
