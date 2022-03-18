@@ -52,8 +52,10 @@ def search_contacts(search_term):
     '''
     conn = get_connection()
     curr = conn.cursor()
-
-    conn.commit()
+    curr.execute("SELECT * FROM addressbook WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number) @@ to_tsquery(%s)",(search_term)) 
+    rows = curr.fetchall()
+    for r in rows:
+        print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
 
 def all_contacts(order_by, direction):
     '''
@@ -82,13 +84,24 @@ def remove_contact(id):
 
     return print("Removed contact ID #%s"%id)
 
-if __name__=='__main__':
+def detailed_contact(id):
+    '''
+    show info for specific contact
+    '''
+    conn = get_connection()
+    curr = conn.cursor()
+    curr.execute('SELECT * FROM addressbook where id=%s'%id)
+    rows = curr.fetchall()
+    for r in rows:
+        print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
+    
 
-    # update_contact('Mirko', 'Petric', '666444', 50)
+if __name__=='__main__':
 
     '''
     pytho3 ab.py [command] param1 param2 param3 ... [params zavise od komande]
     '''
+    search_contacts('Stefan')
 
     parser= argparse.ArgumentParser(description='Edit addressbook contacts')
 
@@ -96,12 +109,13 @@ if __name__=='__main__':
     parser.add_argument('-a', '--add', metavar=('first name', 'last name','phone number'),help='add a contact', nargs=3)
     parser.add_argument('-l', '--list-all', action='store_true', help='show all contacts, sorted by provided argument')
     parser.add_argument('-u', '--update', help='update contact', nargs=4)
-    parser.add_argument('-s', '--search',  help='search by term')
+    parser.add_argument('-s', '--search',  help='search by term', nargs=1)
+    parser.add_argument('-t', '--details', help='show details about user for provided id', nargs=1)
     
     parser.add_argument('-o', '--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
     parser.add_argument('-d', '--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
 
-    parser.add_argument('-t', '--details', help='show details about user for provided id')
+
 
     parser.add_argument('-f', '--first_name', help='first_name')
     parser.add_argument('-n', '--last_name', help='last_name')
@@ -122,8 +136,12 @@ if __name__=='__main__':
         sys.exit(0)
 
     if args.search:        #Search contact
-       search_contacts()
+       search_contacts(*args.search)
        sys.exit(0)
+
+    if args.details:    #Search specific user
+        print(detailed_contact(*args.details))
+        sys.exit(0)
 
     if args.list_all:       #List contacts
         try:
