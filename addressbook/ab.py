@@ -131,7 +131,7 @@ if __name__=='__main__':
         sys.exit(0)
     
     if args.update:     #Update contact
-        print('Contact updated!', update_contact(*args.update))
+        update_contact(*args.update)
         sys.exit(0)
 
     if args.search:        #Search contact
@@ -139,7 +139,7 @@ if __name__=='__main__':
        sys.exit(0)
 
     if args.details:    #Search specific user
-        print(detailed_contact(*args.details))
+        detailed_contact(*args.details)
         sys.exit(0)
 
     if args.list_all:       #List contacts
