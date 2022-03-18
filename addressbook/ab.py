@@ -100,7 +100,8 @@ if __name__=='__main__':
     parser.add_argument('-s', '--search',  help='search my term')
     parser.add_argument('-o', '--sort',  help='.', default='first_name')
     parser.add_argument('-d', '--direction', help='.', default='asc', choices=['asc','desc'])
-    
+
+    parser.add_argument('-t', '--details', help='show details about user for provided id')
 
     parser.add_argument('-f', '--first_name', help='first_name')
     parser.add_argument('-n', '--last_name', help='last_name')
