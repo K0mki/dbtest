@@ -52,7 +52,7 @@ def search_contacts(search_term):
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute("SELECT * FROM addressbook WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number) @@ to_tsquery(%s)",(search_term)) 
+    curr.execute("SELECT * FROM addressbook WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number) @@ to_tsquery('{0}')".format(search_term)) 
     rows = curr.fetchall()
     for r in rows:
         print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
@@ -101,7 +101,6 @@ if __name__=='__main__':
     '''
     pytho3 ab.py [command] param1 param2 param3 ... [params zavise od komande]
     '''
-    search_contacts('Stefan')
 
     parser= argparse.ArgumentParser(description='Edit addressbook contacts')
 
