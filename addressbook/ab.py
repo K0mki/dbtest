@@ -95,7 +95,7 @@ if __name__=='__main__':
     parser.add_argument('-r','--remove', help='remove a contact by ID', nargs=1)
     parser.add_argument('-a', '--add', metavar=('first name', 'last name','phone number'),help='add a contact', nargs=3)
     parser.add_argument('-l', '--list-all', action='store_true', help='show all contacts, sorted by provided argument')
-    parser.add_argument('-u', '--update', help='update contact')
+    parser.add_argument('-u', '--update', help='update contact', nargs=4)
     parser.add_argument('-s', '--search',  help='search by term')
     
     parser.add_argument('-o', '--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
@@ -109,7 +109,7 @@ if __name__=='__main__':
 
     args=parser.parse_args()
        
-    if args.remove:
+    if args.remove:     #Remove contact 
         remove_contact(*args.remove)    #* ??
         sys.exit(0)
     
@@ -117,14 +117,15 @@ if __name__=='__main__':
         print('Added ID ',add_contact(*args.add))  
         sys.exit(0)
     
-    if args.update:
-        update_contact(*args.update)
+    if args.update:     #Update contact
+        print('Contact updated!', update_contact(*args.update))
         sys.exit(0)
 
-    if args.search:
-        sys.exit(0)
+    if args.search:        #Search contact
+       search_contacts()
+       sys.exit(0)
 
-    if args.list_all:
+    if args.list_all:       #List contacts
         try:
             all_contacts(args.sort, args.direction)
         except Exception as e:
