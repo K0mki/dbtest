@@ -1,3 +1,4 @@
+#!.venv/bin/python
 import sys
 import psycopg2
 import yaml
@@ -72,10 +73,50 @@ def detailed_contact(id):
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f'SELECT * FROM addressbook WHERE id={id}')
-    rows = curr.fetchall()
-    for r in rows:
-        print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
+    curr.execute(f'SELECT id, first_name, last_name, phone_number FROM addressbook WHERE id={id}')
+    c = curr.fetchone()
+    print('id      :',c[0])
+    print('ime     :',c[1])
+    print('prezime :',c[2])
+    print('telefon :',c[3])
+
+    '''
+./ab.py -t 1
+
+id      : 1
+ime     : igor
+prezime : jeremic
+telefon : 0695967576
+
+
+==>
+
+id: .
+ime: .
+prezime: .
+telefoni:	
+    mobilni: 0695967576	(primarni)
+    fiksni: 011123123
+    poslovni: 011231231 
+
+
+--verbose
+
+id: .
+ime: .
+prezime: .
+telefoni:       
+    mobilni: 0695967576 (primarni)		(id=bb9f251b-06e6-4ee0-b07e-cb1421f8b168)..
+    fiksni: 011123123				..
+    poslovni: 011231231 			..
+
+
+'''
+
+    
+#    for r in rows:
+#        
+#        print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
     
 
 def all_contacts(order_by, direction):
