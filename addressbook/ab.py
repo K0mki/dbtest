@@ -3,7 +3,6 @@ import psycopg2
 import yaml
 import argparse 
 
-
 connection_cache = None
 
 def get_connection():
@@ -32,7 +31,7 @@ def add_contact(first_name, last_name, phone_number):
     _id = curr.fetchone()[0]
     conn.commit()
     
-    return print('Added contact ID #',_id)
+    return print(f'Added contact ID #{_id}')
 
 def remove_contact(id):
     '''
@@ -54,7 +53,7 @@ def update_contact(first_name, last_name, phone_number, id):
     curr.execute(f"UPDATE addressbook SET first_name = '{first_name}' , last_name = '{last_name}' , phone_number = '{phone_number}' WHERE id = {id}")
     conn.commit()
 
-    return print("Contact #",id,"updated!")
+    return print(f"Contact #{id} updated!")
 
 def search_contacts(search_term):
     '''
@@ -73,7 +72,7 @@ def detailed_contact(id):
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute('SELECT * FROM addressbook WHERE id=%s'%id)
+    curr.execute(f'SELECT * FROM addressbook WHERE id={id}')
     rows = curr.fetchall()
     for r in rows:
         print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
