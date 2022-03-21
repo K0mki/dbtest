@@ -31,7 +31,7 @@ def add_contact(first_name, last_name, phone_number):
     _id = curr.fetchone()[0]
     conn.commit()
     
-    return print(f'Added contact ID #{_id}')
+    return print(f'Added contact #{_id}')
 
 def remove_contact(id):
     '''
@@ -42,7 +42,7 @@ def remove_contact(id):
     curr.execute(f'DELETE FROM addressbook WHERE id = {id}')
     conn.commit()
 
-    return print(f"Removed contact ID #{id}")
+    return print(f"Removed contact #{id}")
 
 def update_contact(first_name, last_name, phone_number, id):
     '''
@@ -102,12 +102,12 @@ if __name__=='__main__':
 
     parser= argparse.ArgumentParser(description='Edit addressbook contacts')
 
-    parser.add_argument('-a', '--add', metavar=('first name', 'last name','phone number'),help='add a contact', nargs=3)
-    parser.add_argument('-r', '--remove', help='remove a contact by ID', nargs=1)
-    parser.add_argument('-u', '--update', help='update contact', nargs=4)
-    parser.add_argument('-s', '--search',  help='search by term', nargs=1)
-    parser.add_argument('-t', '--details', help='show details about user for provided id', nargs=1)
-    parser.add_argument('-l', '--list-all', action='store_true', help='show all contacts, sorted by provided argument')
+    parser.add_argument('-a', '--add', metavar=('[first name]','[last name]','[phone number]'), help='Add a contact', nargs=3)
+    parser.add_argument('-r', '--remove', metavar='[id]', help='Remove a contact by ID', nargs=1)
+    parser.add_argument('-u', '--update', metavar=('[first_name]', '[last_name]','[phone_number]','[id]'), help='Update contact', nargs=4)
+    parser.add_argument('-s', '--search', metavar='[first_name / last_name / phone/number / id]', help='Search and print all contacts containing provided term', nargs=1)
+    parser.add_argument('-t', '--details', metavar='[id]', help='Show details about contact with provided id', nargs=1)
+    parser.add_argument('-l', '--list-all', action='store_true', help='Show all contacts, sorted by provided arguments') # metavar=('[-o / -d]') ?
 
     parser.add_argument('-o', '--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
     parser.add_argument('-d', '--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
