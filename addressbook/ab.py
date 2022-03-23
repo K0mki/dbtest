@@ -44,17 +44,17 @@ def add_number(contacts_id, phone_number, phone_type, is_primary, note):
     '''
         Add another phone number to existing contact
     '''
-    # curr.execute(f"UPDATE phone_numbers SET phone_number = '{phone_number}', phone_type = '{phone_type}', is_primary = '{is_primary}', note = '{note}' WHERE contacts_id = '{contacts_id}'")
     conn = get_connection()
     curr = conn.cursor()
     global id_p
     curr.execute(f"INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES ('{id_p}','{contacts_id}','{phone_number}','{phone_type}','{is_primary}','{note}')")
-    # if {is_primary} == True :
-    #     print("Dva glavna telefona!")
-    #     sys.exit(0)
-    # else : conn.commit()
-    conn.commit()
-    return print(f'Contact ID {contacts_id} phone updated')
+    curr.execute(f"SELECT is_primary FROM phone_numbers WHERE contacts_id='{contacts_id}'")
+    rows = curr.fetchall()
+    if rows == True :
+        print("Dva glavna telefona!")
+        sys.exit(0)
+    else : conn.commit()
+    return print(f'Contact ID {contacts_id} phone added')
 
 def remove_contact(id):
     '''
@@ -84,10 +84,10 @@ def search_contacts(search_term):
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f"SELECT * FROM addressbook WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number) @@ to_tsquery('{search_term}')") 
+    curr.execute(f"SELECT * FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number || ' ' || note) @@ to_tsquery('{search_term}')") 
     rows = curr.fetchall()
     for r in rows:
-        print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
+        print(f"{r[0]:<40} | {r[1]:<7} {r[2]:<7} | {r[3]:<12} | {r[5]:^5} {r[6]:<15} {r[7]:<10} | {r[8]:<20}")
 
 def detailed_contact(id):
     '''
@@ -96,64 +96,70 @@ def detailed_contact(id):
     conn = get_connection()
     curr = conn.cursor()
     curr.execute(f"SELECT c.id, first_name, last_name, phone_number, is_primary, phone_type, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE c.id='{id}'")
-    c = curr.fetchone()
+    try:
+        p1 = curr.fetchone()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
-    print('ID             :',c[0])
-    print('Ime            :',c[1])
-    print('Prezime        :',c[2])
-    print('Telefon        :',c[3])
-    if c[4] == True:
-        print("Glavni telefon") 
+    try:
+        p2 = curr.fetchone()
+    except Exception as e:
+        print(e)
+
+    try:
+        p3 = curr.fetchone()  
+    except Exception as e:
+        print(e)
+
+    try:
+        p4 = curr.fetchone()
+    except Exception as e:
+        print(e)
+
+    print(" ")
+    print('ID             :',p1[0])
+    print('Ime            :',p1[1])
+    print('Prezime        :',p1[2])
+    print('-------------------------')
+    print('  Telefon        :',p1[3])
+    if p1[4] == 1:
+        print("  Glavni telefon") 
     else:
-         print("Nije glavni telefon")
-    print('Vrsta telefona :',c[5])
-    print('Poruka         :',c[6])
+         print("  Nije glavni telefon")
+    print('  Vrsta telefona :',p1[5])
+    print('  Poruka         :',p1[6])
+    print('-------------------------')
+    print('  Telefon 2      :', p2[3])
+    if p2[4] == 1:
+        print("  Glavni telefon") 
+    else:
+         print("  Nije glavni telefon")
+    print('  Vrsta telefona :', p2[5])
+    print('  Poruka         :', p2[6])
+    print('-------------------------')
+    print('  Telefon 3      :', p3[3])
+    if p3[4] == 1:
+        print("  Glavni telefon") 
+    else:
+         print("  Nije glavni telefon")
+    print('  Vrsta telefona :', p3[5])
+    print('  Poruka         :', p3[6])
+    print('-------------------------')
+    print('  Telefon 4      :', p4[3])
+    if p4[4] == 1:
+        print("  Glavni telefon") 
+    else:
+         print("  Nije glavni telefon")
+    print('  Vrsta telefona :', p4[5])
+    print('  Poruka         :', p4[6])
 
-    '''
-./ab.py -t 1
-
-id      : 1
-ime     : igor
-prezime : jeremic
-telefon : 0695967576
-
-
-==>
-
-id: .
-ime: .
-prezime: .
-telefoni:	
-    mobilni: 0695967576	(primarni)
-    fiksni: 011123123
-    poslovni: 011231231 
-
-
---verbose
-
-id: .
-ime: .
-prezime: .
-telefoni:       
-    mobilni: 0695967576 (primarni)		(id=bb9f251b-06e6-4ee0-b07e-cb1421f8b168)..
-    fiksni: 011123123				..
-    poslovni: 011231231 			..
-
-
-'''
-    
-#    for r in rows:
-#        
-#        print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
-    
 
 def all_contacts(order_by, direction):
     '''
         Return all contact ordered by order_by (id,fist_name,last_name,phone_number)
     '''    
-    
-    if order_by not in ('id','first_name','last_name','phone_number'):
-        raise NameError('invalid order by')
+
     
     conn = get_connection()
     curr = conn.cursor()
@@ -161,7 +167,11 @@ def all_contacts(order_by, direction):
 
     rows = curr.fetchall()
     for r in rows:
-        print(f"{r[0]:>5} {r[1]:<15} {r[2]:<20} {r[3]}")
+    #     if r[5] == True:
+    #         r[5]=print("Glavni telefon") 
+    # else:
+    #     r[5]=print("Nije glavni telefon")
+        print(f"{r[0]:<40} {r[1]:<10} {r[2]:<12} {r[3]:<12} {r[4]:<6} {r[5]:^10} {r[6]}")
 
 if __name__=='__main__':
 
@@ -172,7 +182,7 @@ if __name__=='__main__':
     parser= argparse.ArgumentParser(description='Edit addressbook contacts')
 
     parser.add_argument('-a', '--add', metavar=('[first name]','[last name]','[phone_number]','[phone_type]', '[is_primary]', '[note]'), help='Add a contact', nargs=6)
-   # parser.add_argument('-n', '--number', metavar=('[contacts_id]','[phone_number]','[phone_type]','[is_primary]','[note]'), help='Add a phone to a contact', nargs=5)
+    parser.add_argument('-n', '--number', metavar=('[contacts_id]','[phone_number]','[phone_type]','[is_primary]','[note]'), help='Add a phone to a contact', nargs=5)
     parser.add_argument('-r', '--remove', metavar='[id]', help='Remove a contact by ID', nargs=1)
     parser.add_argument('-u', '--update', metavar=('[first_name]', '[last_name]','[phone_number]','[id]'), help='Update contact', nargs=4)
     parser.add_argument('-s', '--search', metavar='[first_name / last_name / phone/number / id]', help='Search and print all contacts containing provided term', nargs=1)
@@ -192,9 +202,9 @@ if __name__=='__main__':
         add_contact(*args.add)
         sys.exit(0) 
 
-    # if args.number:             #Add number
-    #     add_number(args.number[0],args.number[1],args.number[2],args.number[3],args.number[4])
-    #     sys.exit(0)
+    if args.number:             #Add number
+        add_number(args.number[0],args.number[1],args.number[2],args.number[3],args.number[4])
+        sys.exit(0)
 
     if args.remove:             #Remove contact 
         remove_contact(args.remove[0])    
