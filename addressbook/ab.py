@@ -31,6 +31,8 @@ def add_contact(first_name, last_name, phone_number, phone_type, is_primary, not
     '''
         Add contact
     '''
+    is_primary = 'true' if is_primary in (True, 1, 'true','yes','da','1') else 'null'
+
     conn = get_connection()
     curr = conn.cursor()
     global id, id_p
@@ -44,10 +46,17 @@ def add_number(contacts_id, phone_number, phone_type, is_primary, note):
     '''
         Add another phone number to existing contact
     '''
+    
+    is_primary = True if is_primary in (True, 1, 'true','yes','da','1') else None
+    
     conn = get_connection()
     curr = conn.cursor()
     global id_p
-    curr.execute(f"INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES ('{id_p}','{contacts_id}','{phone_number}','{phone_type}','{is_primary}','{note}')")
+    
+#    curr.execute(f"INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES ('{id_p}','{contacts_id}','{phone_number}','{phone_type}','{is_primary}','{note}')")
+    curr.execute(f"INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES (%s,%s,%s,%s,%s,%s)", (str(id_p), contacts_id, phone_number, phone_type, is_primary, is_primary))
+    
+
     curr.execute(f"SELECT is_primary FROM phone_numbers WHERE contacts_id='{contacts_id}'")
     rows = curr.fetchall()
     if rows == True :
@@ -95,7 +104,21 @@ def detailed_contact(id):
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f"SELECT c.id, first_name, last_name, phone_number, is_primary, phone_type, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE c.id='{id}'")
+    curr.execute(f"SELECT c.id, c.first_name, c.last_name, p.phone_number, p.is_primary, p.phone_type, p.note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE c.id='{id}' order by p.is_primary asc")
+
+    iter=0
+    for i in curr.fetchall():
+        if iter==0:
+           print('id       ',i[0])
+           print('ime      ',i[1])
+           print('prezime  ',i[2])
+           print('-'*10)
+        
+        print('    tel:',i[3],f'({i[5]}) {"primary" if i[4] else ""}')           
+
+        iter+=1
+
+    '''
     try:
         p1 = curr.fetchone()
     except Exception as e:
@@ -116,7 +139,8 @@ def detailed_contact(id):
         p4 = curr.fetchone()
     except Exception as e:
         print(e)
-
+    
+    
     print(" ")
     print('ID             :',p1[0])
     print('Ime            :',p1[1])
@@ -154,6 +178,8 @@ def detailed_contact(id):
     print('  Vrsta telefona :', p4[5])
     print('  Poruka         :', p4[6])
 
+    '''
+
 
 def all_contacts(order_by, direction):
     '''
@@ -163,7 +189,7 @@ def all_contacts(order_by, direction):
     
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f'SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id ORDER BY {order_by} {direction}') 
+    curr.execute(f'SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id where p.is_primary=true ORDER BY {order_by} {direction}') 
 
     rows = curr.fetchall()
     for r in rows:
