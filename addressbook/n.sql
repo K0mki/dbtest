@@ -1,11 +1,78 @@
 DROP TABLE IF EXISTS phone_numbers;
 DROP TABLE IF EXISTS contacts;
+DROP TABLE IF EXISTS lookup_phone_types;
+
+DROP EXTENSION IF EXISTS "uuid-ossp";
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE lookup_phone_types(
+    phone_types VARCHAR(32) PRIMARY KEY
+);
 
 CREATE TABLE contacts(
-    id UUID PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
     first_name VARCHAR(128) NOT NULL,
     last_name VARCHAR(128)
 );
+
+CREATE TABLE phone_numbers(
+    id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    contacts_id UUID,
+    is_primary BOOLEAN DEFAULT NULL,
+    phone_number VARCHAR(128) NOT NULL,
+    phone_type VARCHAR(32),
+    note TEXT DEFAULT NULL
+);
+
+ALTER TABLE phone_numbers ADD CONSTRAINT "contact_constraint" FOREIGN KEY(contacts_id) REFERENCES contacts(id);
+ALTER TABLE phone_numbers ADD CONSTRAINT "phone_type_constraint" FOREIGN KEY(phone_type) REFERENCES lookup_phone_types(phone_types);
+
+--ALTER TABLE links ADD CONSTRAINT "type_constraint"
+--FOREIGN KEY (type) REFERENCES links_type_lookup (name);
+
+INSERT INTO lookup_phone_types (phone_types) VALUES ('Mobile');
+INSERT INTO lookup_phone_types (phone_types) VALUES ('Home');
+INSERT INTO lookup_phone_types (phone_types) VALUES ('Work');
+INSERT INTO lookup_phone_types (phone_types) VALUES ('Other');
+
+
+INSERT INTO contacts (id, first_name, last_name) VALUES ('962249dc-c8ff-45b6-a937-a23c8d78bbfb','Stefan','Kotarac');
+
+INSERT INTO phone_numbers (id, contacts_id, phone_type, phone_number, is_primary, note) VALUES ('f682ba62-abc8-4bc6-885b-f2d866d4cfaa','962249dc-c8ff-45b6-a937-a23c8d78bbfb','Mobile','0615855790',true,'Zvati do 23h');
+
+INSERT INTO contacts (id, first_name, last_name) VALUES ('f73142b2-a6d9-4b7c-a932-c4403ae7e88a','Igor','Jeremic');
+
+INSERT INTO phone_numbers (id, contacts_id, phone_type, phone_number, is_primary, note) VALUES ('95dd7bbe-c32e-47c2-b107-5c19d6470a15','f73142b2-a6d9-4b7c-a932-c4403ae7e88a','Mobile','0695967576',true,NULL);
+INSERT INTO phone_numbers (id, contacts_id, phone_type, phone_number, is_primary, note) VALUES ('bb9f251b-06e6-4ee0-b07e-cb1421f8b168','f73142b2-a6d9-4b7c-a932-c4403ae7e88a','Home','0112121212',false,NULL);
+
+INSERT INTO contacts (id, first_name, last_name) VALUES ('f9137614-ec26-4309-8450-9efc820e94eb', 'Marko', 'Markovic');
+
+INSERT INTO phone_numbers (id, contacts_id, phone_type, phone_number, is_primary, note) VALUES ('4edc1270-6b13-4eed-89fc-7ead1f29b18c','f9137614-ec26-4309-8450-9efc820e94eb','Mobile','0611234567',true,'Zvati posle 17h');
+INSERT INTO phone_numbers (id, contacts_id, phone_type, phone_number, is_primary, note) VALUES ('b517ee21-dfed-4f5e-8c2f-35d9becd2faf','f9137614-ec26-4309-8450-9efc820e94eb','Work','0621234567',false,'Zvati do 17h');
+INSERT INTO phone_numbers (id, contacts_id, phone_type, phone_number, is_primary, note) VALUES ('4a8aab47-2ecc-40fd-bda0-35b99dd62576','f9137614-ec26-4309-8450-9efc820e94eb','Home','0631234567',false,'Zvati do 23h');
+INSERT INTO phone_numbers (id, contacts_id, phone_type, phone_number, is_primary, note) VALUES ('19114e29-978e-4293-8b3e-453ecfc23302','f9137614-ec26-4309-8450-9efc820e94eb','Other','064234567',false,'Zvati samo u hitnim slucajevima');
+
+-- SELECT id, first_name, last_name FROM contacts  FROM phone_numbers phone_number, phone_type, note; 
+-- select c.id, first_name, last_name, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id;
+
+--                  id                  | first_name | last_name | phone_number 
+-- --------------------------------------+------------+-----------+--------------
+--  962249dc-c8ff-45b6-a937-a23c8d78bbfb | Stefan     | Kotarac   | 0615855790
+--  f73142b2-a6d9-4b7c-a932-c4403ae7e88a | Igor       | Jeremic   | 0695967576
+--  f73142b2-a6d9-4b7c-a932-c4403ae7e88a | Igor       | Jeremic   | 0112121212
+-- (3 rows)
+
+-- select c.id, first_name, last_name, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id where c.id='962249dc-c8ff-45b6-a937-a23c8d78bbfb';
+
+
+-- select c.id, first_name, last_name, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id where p.is_primary=true;
+
+-- select c.id, first_name, last_name, phone_type, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id where p.is_primary=true;
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
 
 -- todo:
 -- ne dozvoli da jedna osoba ima vise primarnih kontakta
@@ -17,42 +84,3 @@ CREATE TABLE contacts(
 --    ./ab.py --update 962249dc-c8ff-45b6-a937-a23c8d78bbfb --phone-number f682ba62-abc8-4bc6-885b-f2d866d4cfaa 00000123
 -- dodavanje novog
 --    ./ab.py --update 962249dc-c8ff-45b6-a937-a23c8d78bbfb --add-phone-number 00000123
-
-CREATE TABLE phone_numbers(
-    id UUID PRIMARY KEY,
-    contact_id UUID,        
-    is_primary BOOLEAN default NULL,
-    phone_number VARCHAR(128) NOT NULL,
-    phone_type VARCHAR(32),
-    note TEXT default NULL, 
-    constraint fk_contact FOREIGN KEY(contact_id) REFERENCES contacts(id)
-);
-
-insert into contacts (id, first_name, last_name) values ('962249dc-c8ff-45b6-a937-a23c8d78bbfb','Stefan','Kotarac');
-
-insert into phone_numbers (id, contact_id, phone_type, phone_number, is_primary, note) values ('f682ba62-abc8-4bc6-885b-f2d866d4cfaa','962249dc-c8ff-45b6-a937-a23c8d78bbfb','mobile','0615855790',true,'zvati do 23h');
-
-insert into contacts (id, first_name, last_name) values ('f73142b2-a6d9-4b7c-a932-c4403ae7e88a','Igor','Jeremic');
-
-insert into phone_numbers (id, contact_id, phone_type, phone_number, is_primary, note) values ('95dd7bbe-c32e-47c2-b107-5c19d6470a15','f73142b2-a6d9-4b7c-a932-c4403ae7e88a','mobile','0695967576',true,null);
-insert into phone_numbers (id, contact_id, phone_type, phone_number, is_primary, note) values ('bb9f251b-06e6-4ee0-b07e-cb1421f8b168','f73142b2-a6d9-4b7c-a932-c4403ae7e88a','home','0112121212',false,null);
-
-
-
-
-select c.id, first_name, last_name, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id;
-
---                  id                  | first_name | last_name | phone_number 
--- --------------------------------------+------------+-----------+--------------
---  962249dc-c8ff-45b6-a937-a23c8d78bbfb | Stefan     | Kotarac   | 0615855790
---  f73142b2-a6d9-4b7c-a932-c4403ae7e88a | Igor       | Jeremic   | 0695967576
---  f73142b2-a6d9-4b7c-a932-c4403ae7e88a | Igor       | Jeremic   | 0112121212
--- (3 rows)
-
-select c.id, first_name, last_name, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id where c.id='962249dc-c8ff-45b6-a937-a23c8d78bbfb';
-
-
-select c.id, first_name, last_name, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id where p.is_primary=true;
-
-select c.id, first_name, last_name, phone_type, phone_number from contacts c left join phone_numbers p on p.contact_id=c.id where p.is_primary=true;
-

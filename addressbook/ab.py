@@ -3,6 +3,7 @@ import sys
 import psycopg2
 import yaml
 import argparse 
+import uuid
 
 connection_cache = None
 
@@ -21,18 +22,39 @@ def get_connection():
     connection_cache = psycopg2.connect(**config['db'])
     return connection_cache
 
+'''contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id'''
 
-def add_contact(first_name, last_name, phone_number):
+id = uuid.uuid4()   # CONTACT
+id_p = uuid.uuid4() # PHONE ID
+
+def add_contact(first_name, last_name, phone_number, phone_type, is_primary, note):
     '''
         Add contact
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f"INSERT INTO addressbook (first_name, last_name, phone_number) VALUES ('{first_name}','{last_name}','{phone_number}') RETURNING id")
-    _id = curr.fetchone()[0]
+    global id, id_p
+    curr.execute(f"INSERT INTO contacts (id, first_name, last_name) VALUES ('{id}','{first_name}','{last_name}')")
+    curr.execute(f"INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES ('{id_p}','{id}','{phone_number}','{phone_type}','{is_primary}','{note}')")
     conn.commit()
     
-    return print(f'Added contact #{_id}')
+    return print(f'Added contact ID "{id}"')
+
+def add_number(contacts_id, phone_number, phone_type, is_primary, note):
+    '''
+        Add another phone number to existing contact
+    '''
+    # curr.execute(f"UPDATE phone_numbers SET phone_number = '{phone_number}', phone_type = '{phone_type}', is_primary = '{is_primary}', note = '{note}' WHERE contacts_id = '{contacts_id}'")
+    conn = get_connection()
+    curr = conn.cursor()
+    global id_p
+    curr.execute(f"INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES ('{id_p}','{contacts_id}','{phone_number}','{phone_type}','{is_primary}','{note}')")
+    # if {is_primary} == True :
+    #     print("Dva glavna telefona!")
+    #     sys.exit(0)
+    # else : conn.commit()
+    conn.commit()
+    return print(f'Contact ID {contacts_id} phone updated')
 
 def remove_contact(id):
     '''
@@ -40,10 +62,10 @@ def remove_contact(id):
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f'DELETE FROM addressbook WHERE id = {id}')
+    curr.execute(f"DELETE FROM contacts WHERE id = '{id}'")
     conn.commit()
 
-    return print(f"Removed contact #{id}")
+    return print(f"Removed contact ID {id}")
 
 def update_contact(first_name, last_name, phone_number, id):
     '''
@@ -73,12 +95,19 @@ def detailed_contact(id):
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f'SELECT id, first_name, last_name, phone_number FROM addressbook WHERE id={id}')
+    curr.execute(f"SELECT c.id, first_name, last_name, phone_number, is_primary, phone_type, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE c.id='{id}'")
     c = curr.fetchone()
-    print('id      :',c[0])
-    print('ime     :',c[1])
-    print('prezime :',c[2])
-    print('telefon :',c[3])
+
+    print('ID             :',c[0])
+    print('Ime            :',c[1])
+    print('Prezime        :',c[2])
+    print('Telefon        :',c[3])
+    if c[4] == True:
+        print("Glavni telefon") 
+    else:
+         print("Nije glavni telefon")
+    print('Vrsta telefona :',c[5])
+    print('Poruka         :',c[6])
 
     '''
 ./ab.py -t 1
@@ -112,7 +141,6 @@ telefoni:
 
 
 '''
-
     
 #    for r in rows:
 #        
@@ -129,7 +157,7 @@ def all_contacts(order_by, direction):
     
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f'SELECT id, first_name, last_name, phone_number FROM addressbook ORDER BY {order_by} {direction}') 
+    curr.execute(f'SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id ORDER BY {order_by} {direction}') 
 
     rows = curr.fetchall()
     for r in rows:
@@ -143,7 +171,8 @@ if __name__=='__main__':
 
     parser= argparse.ArgumentParser(description='Edit addressbook contacts')
 
-    parser.add_argument('-a', '--add', metavar=('[first name]','[last name]','[phone number]'), help='Add a contact', nargs=3)
+    parser.add_argument('-a', '--add', metavar=('[first name]','[last name]','[phone_number]','[phone_type]', '[is_primary]', '[note]'), help='Add a contact', nargs=6)
+   # parser.add_argument('-n', '--number', metavar=('[contacts_id]','[phone_number]','[phone_type]','[is_primary]','[note]'), help='Add a phone to a contact', nargs=5)
     parser.add_argument('-r', '--remove', metavar='[id]', help='Remove a contact by ID', nargs=1)
     parser.add_argument('-u', '--update', metavar=('[first_name]', '[last_name]','[phone_number]','[id]'), help='Update contact', nargs=4)
     parser.add_argument('-s', '--search', metavar='[first_name / last_name / phone/number / id]', help='Search and print all contacts containing provided term', nargs=1)
@@ -153,15 +182,19 @@ if __name__=='__main__':
     parser.add_argument('-o', '--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
     parser.add_argument('-d', '--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
 
-    parser.add_argument('-f', '--first_name', help='first_name')
-    parser.add_argument('-n', '--last_name', help='last_name')
-    parser.add_argument('-p', '--phone', help='phone')
+    # parser.add_argument('-f', '--first_name', help='first_name')
+    # parser.add_argument('-n', '--last_name', help='last_name')
+    # parser.add_argument('-p', '--phone', help='phone')
 
     args=parser.parse_args()
 
     if args.add:                #Add contact
-        add_contact(args.add[0],args.add[1],args.add[2])
+        add_contact(*args.add)
         sys.exit(0) 
+
+    # if args.number:             #Add number
+    #     add_number(args.number[0],args.number[1],args.number[2],args.number[3],args.number[4])
+    #     sys.exit(0)
 
     if args.remove:             #Remove contact 
         remove_contact(args.remove[0])    
