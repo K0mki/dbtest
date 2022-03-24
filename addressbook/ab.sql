@@ -28,7 +28,7 @@ ALTER TABLE phone_numbers ADD CONSTRAINT "contact_constraint" FOREIGN KEY(contac
 ALTER TABLE phone_numbers ADD CONSTRAINT "phone_type_constraint" FOREIGN KEY(phone_type) REFERENCES lookup_phone_types(phone_types)ON DELETE CASCADE;
 
 --ALTER TABLE links ADD CONSTRAINT "type_constraint"
---FOREIGN KEY (type) REFERENCES links_type_lookup (name);
+--FOREIGN KEY (type) REFERENCES links_type_lookup (name); 
 
 INSERT INTO lookup_phone_types (phone_types) VALUES ('Mobile');
 INSERT INTO lookup_phone_types (phone_types) VALUES ('Home');
