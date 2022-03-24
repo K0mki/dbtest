@@ -23,9 +23,6 @@ def get_connection():
     connection_cache = psycopg2.connect(**config['db'])
     return connection_cache
 
-id   = uuid.uuid4()   # CONTACT ID
-id_p = uuid.uuid4()   # PHONE ID
-
 def add_contact(first_name, last_name, phone_number, phone_type, is_primary, note):     #-a
     '''
         Add contact
@@ -33,7 +30,9 @@ def add_contact(first_name, last_name, phone_number, phone_type, is_primary, not
     is_primary = 'true' if is_primary in (True, 1, 'true','yes','da','1') else 'false'
     conn = get_connection()
     curr = conn.cursor()
-    global id, id_p
+
+    id   = uuid.uuid4()   # CONTACT ID
+    id_p = uuid.uuid4()   # PHONE ID
 
     try:
         curr.execute("INSERT INTO contacts (id, first_name, last_name) VALUES (%s,%s,%s)", (str(id),first_name,last_name))
@@ -51,7 +50,7 @@ def add_number(contacts_id, phone_number, phone_type, is_primary, note):        
     is_primary = True if is_primary in (True, 1, 'true','yes','da','1') else 'false'
     conn = get_connection()
     curr = conn.cursor()
-    global id_p
+    id_p = uuid.uuid4()   # PHONE ID
     
     try:
         curr.execute("INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES (%s,%s,%s,%s,%s,%s)" , (str(id_p),str(contacts_id),phone_number,phone_type,is_primary,note))
@@ -142,10 +141,11 @@ def all_contacts(order_by, direction):                                          
     else:
         rows = curr.fetchall()
         for r in rows:
-            print(f"{r[0]:<35} | {r[1]:^10} {r[2]:<10} | {r[3]:<12} {r[4]:<6} {r[5]:>5} | {r[6]}")
+            print(f"{r[0]:<35} | {r[1]+' '+r[2]:^25} | {r[3]:<12} {r[4]:<6} {r[5]:>5} | {r[6]}")
 
-if __name__=='__main__':
 
+
+def ab():
     '''
         pytho3 ab.py [command] param1 param2 param3 ... [params zavise od komande]
     '''
@@ -157,70 +157,54 @@ if __name__=='__main__':
     parser.add_argument('-r', '--remove', metavar='[id]', help='Remove a contact by ID', nargs=1)
     parser.add_argument('-u', '--update', metavar=('[id]', '[update]','[value]'), help='Update contact', nargs=3)
     parser.add_argument('-s', '--search', metavar='[first_name / last_name / phone/number / id]', help='Search and print all contacts containing provided term', nargs=1)
-    parser.add_argument('-t', '--details', metavar='[id]', help='Show details about contact with provided id', nargs=1)
+    parser.add_argument('-d', '--details', metavar='[id]', help='Show details about contact with provided id', nargs=1)
     parser.add_argument('-l', '--list-all', action='store_true', help='Show all contacts, sorted by provided arguments') # metavar=('[-o / -d]') ?
 
-    parser.add_argument('-o', '--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
-    parser.add_argument('-d', '--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
-
-    # parser.add_argument('--first_name', help='first_name')
-    # parser.add_argument('--last_name', help='last_name')
-    # parser.add_argument('--phone', help='phone')
-    # parser.add_argument('--id', help='id')
+    parser.add_argument('--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
+    parser.add_argument('--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
 
     args=parser.parse_args()
 
-#     if args.first_name:
-#         first_name=(args.first_name[0])
-#         sys.exit(0)
-
-#     if args.last_name:
-#         last_name=(args.last_name[0])
-#         sys.exit(0)
-
-#     if args.phone:
-#         phone_number=(args.phone[0])
-#         sys.exit(0)
-
-#     if args.id:
-#         id=(args.id[0])
-#         sys.exit(0)
-
-# ###################
-
     if args.add:                #Add contact
         add_contact(*args.add)
-        sys.exit(0) 
+        return True
 
     if args.number:             #Add number
         add_number(args.number[0],args.number[1],args.number[2],args.number[3],args.number[4])
-        sys.exit(0)
+        return True
 
     if args.remove:             #Remove contact 
         remove_contact(args.remove[0])    
-        sys.exit(0)
+        return True
     
     if args.update:             #Update contact
         update_contact(*args.update)
-        sys.exit(0)
+        return True
 
     if args.search:             #Search contact
        search_contacts(*args.search, args.sort, args.direction)
-       sys.exit(0)
+       return True
 
     if args.details:            #Search specific user
         detailed_contact(args.details[0])
-        sys.exit(0)
+        return True
 
     if args.list_all:           #List contacts
         try:
             all_contacts(args.sort, args.direction)
         except Exception as e:
             print('Greska')
-            sys.exit(1)
+            return False
         
-        sys.exit(0)
+        return True
         
-
     print('Unknow command')
-    sys.exit(1)
+    return False
+    
+if __name__=='__main__':
+    
+    if not ab():
+        sys.exit(1)
+        
+    sys.exit(0)
+    
