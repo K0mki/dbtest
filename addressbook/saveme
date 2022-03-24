@@ -23,7 +23,6 @@ def get_connection():
     connection_cache = psycopg2.connect(**config['db'])
     return connection_cache
 
-def add_contact(first_name, last_name, phone_number, phone_type, is_primary, note):     #-a
     '''
         Add contact
     '''
@@ -51,7 +50,7 @@ def add_number(contacts_id, phone_number, phone_type, is_primary, note):        
     conn = get_connection()
     curr = conn.cursor()
     id_p = uuid.uuid4()   # PHONE ID
-
+    
     try:
         curr.execute("INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES (%s,%s,%s,%s,%s,%s)" , (str(id_p),str(contacts_id),phone_number,phone_type,is_primary,note))
     except:
@@ -84,9 +83,9 @@ def update_contact(id, update, value):                          #-u
     curr = conn.cursor()
     curr.execute("UPDATE %s SET %s = '%s' WHERE %s = '%s'" %(a,update, value,id1, id))        
     conn.commit() 
-
+    
     return print("Contact with ID %s updated!"%id)
-
+        
 
 
 def search_contacts(search_term, order_by, direction):                                                       #-s
@@ -135,7 +134,7 @@ def all_contacts(order_by, direction):                                          
     conn = get_connection()
     curr = conn.cursor()
     try:
-        curr.execute('SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id where p.is_primary=true ORDER BY %s %s' % (order_by, direction))  
+        curr.execute('SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id ORDER BY %s %s' % (order_by, direction))   #where p.is_primary=true
     except:
         print('Error')
     else:
@@ -182,8 +181,8 @@ def ab():
         return True
 
     if args.search:             #Search contact
-        search_contacts(*args.search, args.sort, args.direction)
-        return True
+       search_contacts(*args.search, args.sort, args.direction)
+       return True
 
     if args.details:            #Search specific user
         detailed_contact(args.details[0])

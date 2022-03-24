@@ -1,0 +1,11 @@
+class Contact(Model):
+    class Meta:
+        table = "contacts"
+        
+    id = fields.UUIDField(pk=True)
+
+    first_name = fields.CharField(max_length=32, index=True)
+    last_name = fields.CharField(max_length=32, index=True, null=True)
+    
+    phone_number = fields.CharField(max_length=32, index=True, null=True)
+
