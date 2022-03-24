@@ -20,6 +20,7 @@ exit
 exit
 
 # as stefan:
+cd work/dbtest/addressbook
 
 psql -U stefan template1 -c 'drop database addressbook' -c 'create database addressbook'
 
