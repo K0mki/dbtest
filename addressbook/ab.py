@@ -30,14 +30,14 @@ def add_contact(first_name, last_name, phone_number, phone_type, is_primary, not
     '''
         Add contact
     '''
-    is_primary = 'true' if is_primary in (True, 1, 'true','yes','da','1') else 'null'
+    is_primary = 'true' if is_primary in (True, 1, 'true','yes','da','1') else 'false'
     conn = get_connection()
     curr = conn.cursor()
     global id, id_p
 
     try:
         curr.execute("INSERT INTO contacts (id, first_name, last_name) VALUES (%s,%s,%s)", (str(id),first_name,last_name))
-        curr.execute("INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES (%s,%s,%s,%s,%s,%s)",(str(id_p),str(id),phone_number,phone_type,is_primary,note))   ##  PUCA KADA true NIJE STAVLJEN KAO is_primary 
+        curr.execute("INSERT INTO phone_numbers (id, contacts_id, phone_number, phone_type, is_primary, note) VALUES (%s,%s,%s,%s,%s,%s)",(str(id_p),str(id),phone_number,phone_type,is_primary,note))   
     except:
         print('Error while adding contact')
     else:
@@ -48,7 +48,7 @@ def add_number(contacts_id, phone_number, phone_type, is_primary, note):        
     '''
         Add another phone number to existing contact
     '''
-    is_primary = True if is_primary in (True, 1, 'true','yes','da','1') else None
+    is_primary = True if is_primary in (True, 1, 'true','yes','da','1') else 'false'
     conn = get_connection()
     curr = conn.cursor()
     global id_p
@@ -75,16 +75,20 @@ def remove_contact(id):                                                         
         conn.commit()
         return print("Removed contact ID %s" %id)
 
-# def update_contact(first_name, last_name, phone_number, id):                          #-u
-#     '''
-#         Update contact
-#     '''
-#     conn = get_connection()
-#     curr = conn.cursor()
-#     curr.execute("UPDATE contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id SET first_name = '%s' , last_name = '%s' , phone_number = '%s' WHERE id = '%s'" %(first_name, last_name, phone_number, id))
-#     conn.commit()
+def update_contact(id, update, value):                          #-u
+    '''
+        Update contact
+    '''
+    a = 'contacts' if update in ('first_name','last_name') else 'phone_numbers'
+    id1= 'id' if a in('contacts') else 'contacts_id'
+    conn = get_connection()
+    curr = conn.cursor()
+    curr.execute("UPDATE %s SET %s = '%s' WHERE %s = '%s'" %(a,update, value,id1, id))        
+    conn.commit() 
+    
+    return print("Contact with ID %s updated!"%id)
+        
 
-#     return print("Contact with ID %s updated!"%id)
 
 def search_contacts(search_term, order_by, direction):                                                       #-s
     '''
@@ -125,14 +129,14 @@ def detailed_contact(id):                                                       
             iter+=1
 
 
-def all_contacts(order_by, direction):
+def all_contacts(order_by, direction):                                          #-l
     '''
         Return all contact ordered by order_by (id,fist_name,last_name,phone_number)
     '''    
     conn = get_connection()
     curr = conn.cursor()
     try:
-        curr.execute('SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id where p.is_primary=true ORDER BY %s %s' % (order_by, direction)) 
+        curr.execute('SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id ORDER BY %s %s' % (order_by, direction))   #where p.is_primary=true
     except:
         print('Error')
     else:
@@ -151,7 +155,7 @@ if __name__=='__main__':
     parser.add_argument('-a', '--add', metavar=('[first name]','[last name]','[phone_number]','[phone_type]', '[is_primary]', '[note]'), help='Add a contact', nargs=6)
     parser.add_argument('-n', '--number', metavar=('[contacts_id]','[phone_number]','[phone_type]','[is_primary]','[note]'), help='Add a phone to a contact', nargs=5)
     parser.add_argument('-r', '--remove', metavar='[id]', help='Remove a contact by ID', nargs=1)
-    parser.add_argument('-u', '--update', metavar=('[first_name]', '[last_name]','[phone_number]','[id]'), help='Update contact', nargs=4)
+    parser.add_argument('-u', '--update', metavar=('[id]', '[update]','[value]'), help='Update contact', nargs=3)
     parser.add_argument('-s', '--search', metavar='[first_name / last_name / phone/number / id]', help='Search and print all contacts containing provided term', nargs=1)
     parser.add_argument('-t', '--details', metavar='[id]', help='Show details about contact with provided id', nargs=1)
     parser.add_argument('-l', '--list-all', action='store_true', help='Show all contacts, sorted by provided arguments') # metavar=('[-o / -d]') ?
@@ -159,30 +163,30 @@ if __name__=='__main__':
     parser.add_argument('-o', '--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
     parser.add_argument('-d', '--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
 
-    parser.add_argument('--first_name', help='first_name')
-    parser.add_argument('--last_name', help='last_name')
-    parser.add_argument('--phone', help='phone')
-    parser.add_argument('--id', help='id')
+    # parser.add_argument('--first_name', help='first_name')
+    # parser.add_argument('--last_name', help='last_name')
+    # parser.add_argument('--phone', help='phone')
+    # parser.add_argument('--id', help='id')
 
     args=parser.parse_args()
 
-    if args.first_name:
-        first_name=(args.first_name[0])
-        sys.exit(0)
+#     if args.first_name:
+#         first_name=(args.first_name[0])
+#         sys.exit(0)
 
-    if args.last_name:
-        last_name=(args.last_name[0])
-        sys.exit(0)
+#     if args.last_name:
+#         last_name=(args.last_name[0])
+#         sys.exit(0)
 
-    if args.phone:
-        phone_number=(args.phone[0])
-        sys.exit(0)
+#     if args.phone:
+#         phone_number=(args.phone[0])
+#         sys.exit(0)
 
-    if args.id:
-        id=(args.id[0])
-        sys.exit(0)
+#     if args.id:
+#         id=(args.id[0])
+#         sys.exit(0)
 
-###################
+# ###################
 
     if args.add:                #Add contact
         add_contact(*args.add)
@@ -196,9 +200,9 @@ if __name__=='__main__':
         remove_contact(args.remove[0])    
         sys.exit(0)
     
-    # if args.update:             #Update contact
-    #     update_contact(*args.update)
-    #     sys.exit(0)
+    if args.update:             #Update contact
+        update_contact(*args.update)
+        sys.exit(0)
 
     if args.search:             #Search contact
        search_contacts(*args.search, args.sort, args.direction)
