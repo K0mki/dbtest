@@ -86,16 +86,20 @@ def remove_contact(id):                                                         
 
 #     return print("Contact with ID %s updated!"%id)
 
-def search_contacts(search_term):                                                       #-s
+def search_contacts(search_term, order_by, direction):                                                       #-s
     '''
         Search for contact by search_term, search term can be id, first_name, last_name or phone_number, then print it out
     '''
     conn = get_connection()
     curr = conn.cursor()
-    curr.execute(f"SELECT * FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number || ' ' || note) @@ to_tsquery('{search_term}')") 
-    rows = curr.fetchall()
-    for r in rows:
-        print(f"{r[0]:<40} | {r[1]:<7} {r[2]:<7} | {r[3]:<12} | {r[5]:^5} {r[6]:<15} {r[7]:<10} | {r[8]:<20}")
+    try:
+        curr.execute("SELECT * FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number || ' ' || note) @@ to_tsquery('%s') ORDER BY %s %s"  % (search_term, order_by, direction))
+    except:
+        print('Error')
+    else:
+        rows = curr.fetchall()
+        for r in rows:
+            print(f"{r[0]:<40} | {r[1]:<7} {r[2]:<7} | {r[3]:<12} | {r[5]:^5} {r[6]:<15} {r[7]:<10} | {r[8]:<20}")
 
 def detailed_contact(id):                                                               #-t
     '''
@@ -128,9 +132,9 @@ def all_contacts(order_by, direction):
     conn = get_connection()
     curr = conn.cursor()
     try:
-        curr.execute(f'SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id where p.is_primary=true ORDER BY {order_by} {direction}') 
+        curr.execute('SELECT c.id, first_name, last_name, phone_number, phone_type, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id where p.is_primary=true ORDER BY %s %s' % (order_by, direction)) 
     except:
-        print('Eror')
+        print('Error')
     else:
         rows = curr.fetchall()
         for r in rows:
@@ -197,7 +201,7 @@ if __name__=='__main__':
     #     sys.exit(0)
 
     if args.search:             #Search contact
-       search_contacts(*args.search)
+       search_contacts(*args.search, args.sort, args.direction)
        sys.exit(0)
 
     if args.details:            #Search specific user
