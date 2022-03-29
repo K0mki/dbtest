@@ -1,5 +1,6 @@
 #!.venv/bin/python
 from ast import Try
+from dataclasses import field
 import sys
 import psycopg2
 import yaml
@@ -23,11 +24,12 @@ def get_connection():
     connection_cache = psycopg2.connect(**config['db'])
     return connection_cache
 
+
 def add_contact(first_name, last_name, phone_number, phone_type, is_primary, note):     #-a
     '''
         Add contact
     '''
-    is_primary = 'true' if is_primary in (True, 1, 'true','yes','da','1') else 'false'
+    is_primary = 'true' if is_primary in (True, 1, 'True' , 'true' , 'yes' , 'da' , '1' ) else 'false'
     conn = get_connection()
     curr = conn.cursor()
 
@@ -95,13 +97,13 @@ def search_contacts(search_term, order_by, direction):                          
     '''
     conn = get_connection()
     curr = conn.cursor()
-    try:
-        curr.execute("SELECT * FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number || ' ' || note) @@ to_tsquery('%s') ORDER BY %s %s"  % (search_term, order_by, direction))
-    except:
-        print('Error')
-    else:
-        rows = curr.fetchall()
-        for r in rows:
+    # try:
+    curr.execute("SELECT * FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contacts_id WHERE to_tsvector(first_name || ' ' || last_name || ' ' || phone_number || ' ' || note) @@ to_tsquery('%s') ORDER BY %s %s"  % (search_term, order_by, direction))
+    # except:
+    #     print('Error')
+    # else:
+    rows = curr.fetchall()
+    for r in rows:
             print(f"{r[0]:<40} | {r[1]:<7} {r[2]:<7} | {r[3]:<12} | {r[5]:^5} {r[6]:<15} {r[7]:<10} | {r[8]:<20}")
 
 def detailed_contact(id):                                                               #-t
