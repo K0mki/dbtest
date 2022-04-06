@@ -8,7 +8,6 @@ from tortoise import Tortoise, fields, run_async
 from tortoise.models import Model
 from tortoise.query_utils import Prefetch
 
-
 class School(Model):
     class Meta:
         table='schools'
@@ -54,7 +53,7 @@ async def run2():
     
         print('ucenici iz te skole su')
 
-#        await os_branko_radicevic.fetch_related('students')
+        # await os_branko_radicevic.fetch_related('students')
 
         for s in os_branko_radicevic.students:
             print(s,s.id,s.name)
