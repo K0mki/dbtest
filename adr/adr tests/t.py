@@ -62,4 +62,4 @@ async def run2():
     
 
 if __name__ == "__main__":
-    run_async(run2())
+    run_async(run())

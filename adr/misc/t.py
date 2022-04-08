@@ -39,6 +39,7 @@ class PhoneNumber(Model):
     note = fields.TextField(null=True)
 
     contact: fields.ForeignKeyRelation[Contact] = fields.ForeignKeyField("models.Contact",related_name="phone_numbers")
+
     phone_type : fields.ForeignKeyRelation[PhoneType] = fields.ForeignKeyField("models.PhoneType")
 
 async def run():
@@ -60,55 +61,30 @@ async def run():
         
         lookups['phone_types'][pt_name]=pt
 
-    # def j_serialize(s):
-    #     if type(s)==PhoneType:
-    #         return s.name
-    #     return str(s)
-        
-    # print(json.dumps(lookups,indent=4,default=j_serialize))
     
     for x in [
         {"first_name":"Stefan","last_name":"Kotarac","phone_numbers": [{"type":"Mobile", "number":"123"}, {"type": "Home", "number": "345"}]},
         {"first_name":"Igor","last_name":"Jeremic","phone_numbers": [{"type":"Mobile", "number":"0695967576"}]},
         {"first_name":"Aleksandar","last_name":"Stojkovic","phone_numbers": [{"type":"Mobile", "number":"061234567"}]}
     ]:
-        contact = Contact(first_name=x['first_name'], last_name=x['last_name'])
-        await contact.save()
-        await contact.fetch_related('phone_numbers')
-        for pn in x['phone_numbers']:
-            dbpn = PhoneNumber(contact=contact, phone_number=pn['number'], phone_type=lookups['phone_types'][pn['type']])
-            await dbpn.save()
+        # contact = Contact(first_name=x['first_name'], last_name=x['last_name'])
+        # await contact.save()
+        # await contact.fetch_related('phone_numbers')
+        # for pn in x['phone_numbers']:
+        #     dbpn = PhoneNumber(contact=contact, phone_number=pn['number'], phone_type=lookups['phone_types'][pn['type']])
+        #     await dbpn.save()
             
 #            await contact.phone_numbers.add( PhoneNumber(contact=contact, phone_number=pn['number'], phone_type=lookups['phone_types'][pn['type']]))
+ 
             
-        print(x)
-
-async def run2():
-    await Tortoise.init(db_url="sqlite://adr.sql",modules={"models": ["__main__"]})  #postgres://stefan:123@localhost:5432/adr.sql
-
-    contacts = await Contact.all().prefetch_related('phone_numbers','phone_numbers__phone_type')
-    for contact in contacts:
-        print(contact)
-
-async def run3_get_stefan():
-    await Tortoise.init(db_url="sqlite://adr.sql",modules={"models": ["__main__"]})  #postgres://stefan:123@localhost:5432/adr.sql
-
-    contacts = await Contact.filter(first_name='Stefan').prefetch_related('phone_numbers','phone_numbers__phone_type')
-    for contact in contacts:
-        print(contact)
+        PhoneType.filter(name = 'Mobile')
     
-async def run4_update_stefan():
-    await Tortoise.init(db_url="sqlite://adr.sql",modules={"models": ["__main__"]})  #postgres://stefan:123@localhost:5432/adr.sql
+        print(pt)
+       
 
-    stefan = await Contact.filter(first_name='Stefan').prefetch_related('phone_numbers','phone_numbers__phone_type').get_or_none()
-    if stefan:
-        stefan.last_name="K"
-        await stefan.save()
-        
+
         
 if __name__ == "__main__":
 
     run_async(run())
-#    run_async(run4_update_stefan())
-#    run_async(run3_get_stefan())
 

@@ -1,0 +1,63 @@
+async def add_c(first_name, last_name):     #-c
+    '''
+        Add only contact name
+    '''    
+    # await add_c(first_name="Boban", last_name="Rajovic")
+    c = Contact ( first_name = first_name , last_name = last_name )
+    await c.save()
+    return print('Added contact ' , c.id)
+
+
+
+async def search_contacts(search_term , what):                                                #-s
+    '''
+        Search for contacts by search_term, search term can be id, first_name, last_name or phone_number, then print it out
+    '''
+    # search_list = [(x.username, x.age) for x in await User.filter().all()]
+    # return search_list
+    
+    if search_term in ('first_name','last_name'):
+       contact =  await Contact.filter(**{search_term:what}).all()
+       return await contact
+    else:
+       phone = await PhoneNumber.filter(**{search_term:what}).all()
+       return await phone
+
+# async def detailed_contact(id):                                                               #-d
+#     '''
+#         Show info for provided ID's contact
+#     '''
+    
+
+
+
+
+    parser.add_argument('-c', '--contact',  metavar = ('[first_name]','[last_name]'), help='Add only contact name', nargs=2)
+
+#     parser.add_argument('-s', '--search',   metavar = ('[first_name / last_name / phone/number / id]'), help='Search and print all contacts containing provided term', nargs=1)
+#     parser.add_argument('-d', '--details',  metavar = ('[id]'), help='Show details about contact with provided id', nargs=1)
+
+#     parser.add_argument('--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
+#     parser.add_argument('--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
+
+
+
+    if args.contact:                #Add only contact name
+        await add_c(args.c[0],args.c[1])
+        return await True
+
+ 
+
+
+#     if args.search:             #Search contact
+#         search_contacts(*args.search, args.sort, args.direction)
+#         return True
+
+    # if args.details:            #Search specific user
+    #     detailed_contact(args.details[0])
+    #     return True
+
+
+        
+    print('Unknow command')
+    return False
