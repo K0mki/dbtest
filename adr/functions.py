@@ -13,7 +13,7 @@ async def arg():
     parser.add_argument('-a', '--add',      metavar = ('[first_name]','[last_name]','[phone_number]','[phone_type]', '[is_primary]', '[note]'), help='Add a contact', nargs=6)
     parser.add_argument('-n', '--number',   metavar = ('[contacts_id]','[phone_number]','[phone_type]','[is_primary]','[note]'), help='Add aother phone number to a contact', nargs=5)
     parser.add_argument('-r', '--remove',   metavar = ('[what]' , '[where]'), help='Remove a contact', nargs=2)
-    # parser.add_argument('-u', '--update',   metavar = ('[id]', '[update]','[value]'), help='Update contact', nargs=3)
+    parser.add_argument('-u', '--update',   metavar = ('[id]', '[update]','[value]'), help='Update contact', nargs=3)
     # parser.add_argument('-l', '--list-all', metavar = (''), action='store_true', help='Show all contacts, sorted by provided arguments')
     # parser.add_argument('-s', '--search',   metavar = ('[first_name / last_name / phone/number / id]'), help='Search and print all contacts containing provided term', nargs=1)
     # parser.add_argument('-d', '--details',  metavar = ('[id]'), help='Show details about contact with provided id', nargs=1)
@@ -37,9 +37,9 @@ async def arg():
         await remove_contact(*args.remove)    
         return True
 
-    # if args.update:             #Update contact
-    #     update_contact(*args.update)
-    #     return True
+    if args.update:             #Update contact
+        update_contact(*args.update)
+        return True
 
     # if args.search:             #Search contact
     #     search_contacts(*args.search, args.sort, args.direction)
@@ -87,7 +87,7 @@ async def setup():
     # c1 = Contact(first_name ='Stefan', last_name = 'Kotarac')
     # await c1.save()
     # p1 = PhoneNumber( phone_number = '12345678', phone_type = mobile , is_primary = 'True', contact_id = c1.id, note = "Moj broj" )
-    # p12 = PhoneNumber( phone_number = '23456789', phone_type = home , is_primary = 'False', contact_id = c1.id, note = "Kucni broj" )
+    # p12 = PhoneNumber( phone_number = '23456789', phone_type = home , is_primary = False, contact_id = c1.id, note = "Kucni broj" )
     # await p1.save()
     # await p12.save()
     # c2 = Contact(first_name ='Marko', last_name = 'Markovic')
@@ -95,9 +95,10 @@ async def setup():
     # p2 = PhoneNumber( phone_number = '34567890', phone_type = mobile , is_primary = 'True', contact_id = c2.id, note = "Glavni broj" )
     # await p2.save()
 
-    # await add_contact('Test', 'Test' , '1234', mobile , True , 'test br')
-    # await add_number('f9ff95cd-0251-4dba-8809-4b7196a16aba' , '23456', work , False , 'test br 2')
-    # await remove_contact('first_name','Marko')
+    # # await add_contact('Test', 'Test' , '1234', mobile , "da" , 'test br')
+    # await add_number('f9ff95cd-0251-4dba-8809-4b7196a16aba' , '23456', work , "dsadsadsa" , 'test br 2')
+    # await remove_contact('first_name','Test')
+    await update_contact('b85e0ca8-b952-45ae-a85f-3e2836087699', 'note', 'test222')
 
     if not await arg():
         await sys.exit(1)
@@ -116,7 +117,7 @@ async def add_contact(first_name, last_name, phone_number, p_type, is_primary, n
     phone = PhoneNumber( phone_number = phone_number , phone_type = p_type , is_primary = is_primary , contact_id = contact.id ,note = note)
     await phone.save()
 
-    return await print('Added contact ID')
+    return await print('Added contact')
 
 async def add_number(contact_id, phone_number, p_type, is_primary, note):                               #-n
     '''
@@ -127,7 +128,7 @@ async def add_number(contact_id, phone_number, p_type, is_primary, note):       
 
     phone = PhoneNumber( phone_number = phone_number , phone_type = p_type , is_primary = is_primary , contact_id = contact_id ,note = note)
     await phone.save()
-    return await print('Added number ID')
+    return await print('Added number')
 
 async def remove_contact(where,what):                                                                    #-n
     '''
@@ -140,23 +141,27 @@ async def update_contact(id, upd, value):                                       
     '''
         Update contact
     '''
-    contact = await Contact.filter(id=id).prefetch_related('phone_numbers','phone_numbers__phone_type').get_or_none()
-
+    if upd in ('first_name' , 'last_name'):
+        contact = await Contact.filter(id=id).update(**{upd:value})
+    else:
+        contact = await PhoneNumber.filter(contact_id=id).update(**{upd:value})
     await contact.save()
 
-# async def search_contacts(search_term , what):                                                #-s
-#     '''
-#         Search for contacts by search_term, search term can be id, first_name, last_name or phone_number, then print it out
-#     '''
-#     # search_list = [(x.username, x.age) for x in await User.filter().all()]
-#     # return search_list
+    return await print('Contact Updated')
+
+async def search_contacts(search_term , what):                                                #-s
+    '''
+        Search for contacts by search_term, search term can be id, first_name, last_name or phone_number, then print it out
+    '''
+    # search_list = [(x.username, x.age) for x in await User.filter().all()]
+    # return search_list
     
-#     if search_term in ('first_name','last_name'):
-#        contact =  await Contact.filter(**{search_term:what}).all()
-#        return await contact
-#     else:
-#        phone = await PhoneNumber.filter(**{search_term:what}).all()
-#        return await phone
+    if search_term in ('first_name','last_name'):
+       contact =  await Contact.filter(**{search_term:what}).all()
+       return await contact
+    else:
+       phone = await PhoneNumber.filter(**{search_term:what}).all()
+       return await phone
 
 # async def detailed_contact(id):                                                               #-d
 #     '''
