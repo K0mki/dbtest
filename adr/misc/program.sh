@@ -9,7 +9,7 @@ clear
 
 wget -q "https://zadatak.singidunum.ac.rs/app/os/ispit/i.php?o=$indeks" -O $indeks.data
 
-cat $indeks.data | grep -E "^[A-Z]{2}-[0-9]{3}-[A-Z]{2}$" > .tablice 
+cat $indeks.data |      
 
 for tablica in $( cat .tablice ); do
     broj=$( echo $tablica | sed -E 's/^[A-Z]{2}-//; s/-[A-Z]{2}$//' )

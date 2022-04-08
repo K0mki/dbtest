@@ -3,7 +3,67 @@ import sys
 from tortoise import Tortoise
 from models import * 
 
-async def create():
+async def arg():
+    '''
+        python3 adr.py [command] param1 param2 param3 ... [params zavise od komande]
+    '''
+
+    parser = argparse.ArgumentParser(description='Edit addressbook contacts')
+
+    parser.add_argument('-a', '--add',      metavar = ('[first_name]','[last_name]','[phone_number]','[phone_type]', '[is_primary]', '[note]'), help='Add a contact', nargs=6)
+    parser.add_argument('-n', '--number',   metavar = ('[contacts_id]','[phone_number]','[phone_type]','[is_primary]','[note]'), help='Add aother phone number to a contact', nargs=5)
+    parser.add_argument('-r', '--remove',   metavar = ('[what]' , '[where]'), help='Remove a contact', nargs=2)
+    # parser.add_argument('-u', '--update',   metavar = ('[id]', '[update]','[value]'), help='Update contact', nargs=3)
+    # parser.add_argument('-l', '--list-all', metavar = (''), action='store_true', help='Show all contacts, sorted by provided arguments')
+    # parser.add_argument('-s', '--search',   metavar = ('[first_name / last_name / phone/number / id]'), help='Search and print all contacts containing provided term', nargs=1)
+    # parser.add_argument('-d', '--details',  metavar = ('[id]'), help='Show details about contact with provided id', nargs=1)
+
+    # parser.add_argument('--setup',  help='Clear and create database',)
+    # parser.add_argument('--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
+    # parser.add_argument('--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
+
+
+    args = parser.parse_args()
+
+    if args.add:                #Add contact
+        await add_contact(*args.add)
+        return True
+
+    if args.number:             #Add number
+        await add_number(*args.number)
+        return True
+
+    if args.remove:             #Remove contact 
+        await remove_contact(*args.remove)    
+        return True
+
+    # if args.update:             #Update contact
+    #     update_contact(*args.update)
+    #     return True
+
+    # if args.search:             #Search contact
+    #     search_contacts(*args.search, args.sort, args.direction)
+    #     return True
+
+    # if args.details:            #Search specific user
+    #     detailed_contact(args.details[0])
+    #     return True
+
+    # if args.setup:             #Setup database
+    #     await setup()
+    #     return True
+
+    # if args.list_all:           #List contacts
+    #     try:
+    #         await all_contacts(args.sort, args.direction)
+    #     except Exception as e:
+    #         await print('Greska')
+    #         return False
+        
+    #     return True
+print ('Setup and eddit your addressbook')
+
+async def setup():
     await Tortoise.init(db_url="postgres://stefan:123@localhost:5432/adr" , modules={"models": ["__main__"]})
     await Tortoise.generate_schemas()
 
@@ -23,6 +83,21 @@ async def create():
     if not other:
         other = PhoneType(name="Other")
         await other.save()
+
+    # c1 = Contact(first_name ='Stefan', last_name = 'Kotarac')
+    # await c1.save()
+    # p1 = PhoneNumber( phone_number = '12345678', phone_type = mobile , is_primary = 'True', contact_id = c1.id, note = "Moj broj" )
+    # p12 = PhoneNumber( phone_number = '23456789', phone_type = home , is_primary = 'False', contact_id = c1.id, note = "Kucni broj" )
+    # await p1.save()
+    # await p12.save()
+    # c2 = Contact(first_name ='Marko', last_name = 'Markovic')
+    # await c2.save()
+    # p2 = PhoneNumber( phone_number = '34567890', phone_type = mobile , is_primary = 'True', contact_id = c2.id, note = "Glavni broj" )
+    # await p2.save()
+
+    # await add_contact('Test', 'Test' , '1234', mobile , True , 'test br')
+    # await add_number('f9ff95cd-0251-4dba-8809-4b7196a16aba' , '23456', work , False , 'test br 2')
+    # await remove_contact('first_name','Marko')
 
     if not await arg():
         await sys.exit(1)
@@ -96,59 +171,3 @@ async def update_contact(id, upd, value):                                       
 #     for a in all:
 #         await print(f"{a[0]:<35} | {a[1]+' '+a[2]:^25} | {a[3]:<12} {a[4]:<6} {a[5]:>5} | {[6]}")
 
-async def arg():
-    '''
-        python3 adr.py [command] param1 param2 param3 ... [params zavise od komande]
-    '''
-
-    parser = argparse.ArgumentParser(description='Edit addressbook contacts')
-
-    parser.add_argument('-a', '--add',      metavar = ('[first_name]','[last_name]','[phone_number]','[phone_type]', '[is_primary]', '[note]'), help='Add a contact', nargs=6)
-    parser.add_argument('-n', '--number',   metavar = ('[contacts_id]','[phone_number]','[phone_type]','[is_primary]','[note]'), help='Add aother phone number to a contact', nargs=5)
-    parser.add_argument('-r', '--remove',   metavar = ('[what]' , '[where]'), help='Remove a contact', nargs=2)
-    # parser.add_argument('-u', '--update',   metavar = ('[id]', '[update]','[value]'), help='Update contact', nargs=3)
-    # parser.add_argument('-l', '--list-all', metavar = (''), action='store_true', help='Show all contacts, sorted by provided arguments')
-    # parser.add_argument('-s', '--search',   metavar = ('[first_name / last_name / phone/number / id]'), help='Search and print all contacts containing provided term', nargs=1)
-    # parser.add_argument('-d', '--details',  metavar = ('[id]'), help='Show details about contact with provided id', nargs=1)
-
-    # parser.add_argument('--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
-    # parser.add_argument('--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
-
-
-    args = parser.parse_args()
-
-    if args.add:                #Add contact
-        await add_contact(*args.add)
-        return True
-
-    if args.number:             #Add number
-        await add_number(*args.number)
-        return True
-
-    if args.remove:             #Remove contact 
-        await remove_contact(*args.remove)    
-        return True
-
-    # if args.update:             #Update contact
-    #     update_contact(*args.update)
-    #     return True
-
-    # if args.search:             #Search contact
-    #     search_contacts(*args.search, args.sort, args.direction)
-    #     return True
-
-    # if args.details:            #Search specific user
-    #     detailed_contact(args.details[0])
-    #     return True
-
-    # if args.list_all:           #List contacts
-    #     try:
-    #         await all_contacts(args.sort, args.direction)
-    #     except Exception as e:
-    #         await print('Greska')
-    #         return False
-        
-    #     return True
-
-    print('Unknow command')
-    return False

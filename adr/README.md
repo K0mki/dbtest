@@ -3,8 +3,6 @@ cd /home/stefan/work/dbtest/adr
 cd work/dbtest/adr
 python3 -m venv .venv &&. .venv/bin/activate && pip install -r requirements.txt
 
-cd work/dbtest/addressbook
-
 psql -U stefan template1 -c 'drop database adr' -c 'create database adr'
 
 sudo su

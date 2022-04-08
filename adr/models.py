@@ -44,4 +44,4 @@ class PhoneNumber(Model):
 #     contact: fields.ForeignKeyRelation[Contact] = fields.ForeignKeyField("models.Contact")
 #     phone_numbers : fields.ForeignKeyField[PhoneNumber] = fields.ForeignKeyField('model.PhoneNumber')
 #     phone_type : fields.ForeignKeyField[PhoneType] = fields.ForeignKeyField('model.PhoneType')
-#     search: fields.TextField(null=True) 
+#     search: fields.TextField(null=True)  
