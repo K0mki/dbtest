@@ -7,6 +7,7 @@ from tortoise import run_async
 # TODO  Fix models
 # TODO  Bash scripts ; drop/create database , insert test contacts ...
 # TODO  Make tests
+# LOAD CONFIG FROM config.yaml
 
 #./adr.py  izbacuje sta radi program
 #./adr.py  -h  izbacuje sve funkcije programa i kako se koriste
@@ -14,4 +15,4 @@ from tortoise import run_async
 #./adr.py  -a ... -l  .....
 
 if __name__ == "__main__":
-    run_async(setup())
+    run_async(arg())

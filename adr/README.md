@@ -14,6 +14,9 @@ drop database adr;
 create database adr;
 \c adr
 
+psql -U stefan template1 -c 'drop database adr;' -c 'create database adr;'
+
+
 select * from lookup_phone_types;
 select * from contacts;
 select * from phone_numbers;
