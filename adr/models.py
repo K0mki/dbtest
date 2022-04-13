@@ -24,7 +24,7 @@ class Contact(Model):
     phone: fields.ReverseRelation['PhoneNumber']
     
     def __str__(self):
-        return f"{self.first_name} {self.last_name} "+' '.join([f'{pno.phone_number} ({pno.phone_type.name})' for pno in self.phone_numbers])          
+        return f"{self.first_name} {self.last_name} "+' '.join([f'\n   {("Primary " if pno.is_primary == True else "x  "):^9} {pno.phone_number} ({pno.phone_type.name:^6})   {pno.note:<10} ' for pno in self.phone])      # ? 
 
 
 class PhoneNumber(Model):

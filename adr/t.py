@@ -7,6 +7,8 @@ class Tournament(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
 
+    events: fields.ReverseRelation["Event"]
+
     def __str__(self):
         return self.name
 
@@ -15,10 +17,10 @@ class Event(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
     tournament: fields.ForeignKeyRelation[Tournament] = fields.ForeignKeyField(
-        "models.Tournament"
+        "models.Tournament", related_name="events"
     )
     participants: fields.ManyToManyRelation["Team"] = fields.ManyToManyField(
-        "models.Team", through="event_team"
+        "models.Team", related_name="events", through="event_team"
     )
 
     def __str__(self):
@@ -28,6 +30,8 @@ class Event(Model):
 class Team(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
+
+    events: fields.ManyToManyRelation[Event]
 
     def __str__(self):
         return self.name
@@ -52,7 +56,9 @@ async def run():
         await Tournament.all()
         .prefetch_related(
             Prefetch("events", queryset=Event.filter(name="First"), to_attr="to_attr_events_first"),
-            Prefetch("events", queryset=Event.filter(name="Second"), to_attr="to_attr_events_second"),
+            Prefetch(
+                "events", queryset=Event.filter(name="Second"), to_attr="to_attr_events_second"
+            ),
         )
         .first()
     )
