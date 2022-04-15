@@ -23,9 +23,6 @@ async def arg():
     parser.add_argument('-d', '--details',  metavar = ('[id]'), help='Show details about contact with provided id', nargs=1)
 
     parser.add_argument('--setup', action='store_true' ,  help='Clear and create database',)
-    # parser.add_argument('--sort',  help='Chose sorting parameter', default='first_name', choices=['first_name','last_name','phone_number','id'])
-    # parser.add_argument('--direction', help='Chose sorting direction', default='asc', choices=['asc','desc'])
-
 
     args = parser.parse_args()
 
@@ -69,7 +66,6 @@ async def setup():
     await Tortoise.generate_schemas()
 
 
-    global lookups 
     lookups =  {'phone_types':{}}
     
     for pt_name in ('Mobile','Work','Home','Other'):
@@ -123,11 +119,6 @@ async def add_number(contact_id, phone_number, p_type, is_primary, note):       
         Add another phone number to existing contact
     '''
     is_primary =  is_primary in (True, 1, 'True' , 'true' , 'yes' , 'da' , '1' )
-
-    contact = await Contact.filter(id = contact_id)
-    if contact.phone__is_primary == True :
-        pass
-
     
     note = '' if note in ('',' ') else note
     lookups =  {'phone_types':{}}
@@ -167,32 +158,24 @@ async def update_contact(id, upd, value):                                       
 
     return print('Contact Updated')
 
-async def search_contacts(what,search_term ):                                                #-s
+async def search_contacts(what,search_term ):                                                            #-s
     '''
         Search for contacts by search_term, search term can be id, first_name, last_name or phone_number, then print it out
     '''
-    # if search_term in ('first_name' , 'last_name'):
-    #     s = await Contact.filter(**{search_term:what}).prefetch_related('phone','phone__phone_type')
-    # else:
-    #     s = await PhoneNumber.filter(**{search_term:what}).prefetch_related('phone','phone__phone_type')
-    # for contact in s:
-    #     print(contact)
-
     contacts = await Contact.filter(**{search_term:what}).prefetch_related('phone','phone__phone_type')
     for contact in contacts:
         print(contact)
 
-async def detailed_contact(id):                                                               #-d
+async def detailed_contact(id):                                                                           #-d
     '''
         Show info for provided ID's contact
     '''
-    
     contacts = await Contact.filter(id = id).prefetch_related('phone','phone__phone_type')
     for contact in contacts:
         print(contact)
 
 
-async def all_contacts():                                                           #-l
+async def all_contacts():                                                                                #-l
     '''
         Return all contact ordered by order_by (id,fist_name,last_name,phone_number)
     '''
@@ -200,11 +183,4 @@ async def all_contacts():                                                       
     contacts = await Contact.all().prefetch_related('phone','phone__phone_type')
     for contact in contacts:
         print(contact)
-
-    # conn = connections.get("default")
-    # a = await conn.execute_query_dict('SELECT c.id, first_name, last_name, phone_number, phone_type_id, is_primary, note FROM contacts c LEFT JOIN phone_numbers p ON c.id = p.contact_id where p.is_primary=true')
-    # return print(a)
-    # rows = conn.all()
-    # for r in rows:
-    #     print(f"{r[0]:<35} | {r[1]+' '+r[2]:^25} | {r[3]:<12} {r[4]:<6} {r[5]:>5} | {r[6]}")
 
