@@ -38,3 +38,6 @@ class PhoneNumber(Model):
 
     contact: fields.ForeignKeyRelation[Contact] = fields.ForeignKeyField("models.Contact",related_name="phone")
     phone_type : fields.ForeignKeyRelation[PhoneType] = fields.ForeignKeyField("models.PhoneType")
+    
+    def __str__(self):
+        return f"{self.id} {self.phone_number} {self.phone_type} {self.note}"

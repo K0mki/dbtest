@@ -1,0 +1,9 @@
+#postgres://stefan:123@localhost:5432/adr
+db:
+  host: localhost        # ovo je ime hosta
+  user: stefan
+  password: 123
+  port: 5432 
+  database: adr
+    
+    
