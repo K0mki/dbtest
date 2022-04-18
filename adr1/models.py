@@ -27,9 +27,6 @@ class PhoneNumber(Model):
     def __str__(self):
         return f"{self.id} {self.phone_number} {self.phone_type} {self.note}"
 
-Phone_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumber')
-PhoneIn_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumberIn',exclude_readonly=True)
-
 
 class Contact(Model):
     class Meta:
@@ -43,6 +40,10 @@ class Contact(Model):
     
     def __str__(self):
         return f"{self.first_name} {self.last_name} "+' '.join([f'\n   {("Primary " if pno.is_primary == True else "x  "):^9} {pno.phone_number} ({pno.phone_type.name:^6})   {pno.note:<10} ' for pno in self.phone])      
+
+
+Phone_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumber')
+PhoneIn_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumberIn',exclude_readonly=True)
 
 Contact_Pydantic = pydantic_model_creator(Contact, name='Contact')
 ContactIn_Pydantic = pydantic_model_creator(Contact, name='ContactIn',exclude_readonly=True)

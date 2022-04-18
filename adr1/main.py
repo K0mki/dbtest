@@ -8,7 +8,7 @@ db = []
 
 @app.get("/")
 async def index():
-    return {'message': 'Hello'}
+    return {'message': 'go to http://127.0.0.1:8000/docs for the API doc'}
 
 @app.post('/create-contact')
 async def create_contact(contact: ContactIn_Pydantic):
@@ -24,24 +24,14 @@ async def all_contacts():
 async def get_contact(contact_id: str):                                                                           
     return await Contact_Pydantic.from_queryset_single(Contact.get(id=contact_id))
 
-# @app.put("/update-contact/{contact_id}",response_model=Contact_Pydantic,status_code=status.HTTP_200_OK)
-# async def update_contact(contact_id: str,contact:Contact_Pydantic):
-
-#     contact_to_update = Contact_Pydantic.filter(Contact.id==contact_id).first()
-#     contact_to_update.first_name = contact.first_name
-#     contact_to_update.last_name = contact.last_name
-#     # contact = Contact_Pydantic.filter()
-#     # if contact_id not in db:
-#     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact ID does not exist")
-    
-#     # if Contact.first_name != None:
-#     #     db[contact_id].first_name = Contact.first_name
-
-#     # if Contact.last_name != None:
-#     #     db[contact_id].last_name = Contact.last_name
-
-#     # return db[contact_id]    
-
+@app.put("/update-contact/{contact_id}",response_model=Contact_Pydantic,status_code=status.HTTP_200_OK)
+async def update_contact(contact_id: str,update:ContactIn_Pydantic):
+    contact = await Contact.get(id=contact_id)
+    update = update.dict(exclude_unset=True)
+    contact.first_name = update['first_name']
+    contact.last_name = update['last_name']
+    await contact.save()
+    return await Contact_Pydantic.from_tortoise_orm(contact)
 
 @app.delete('/delete-contact/{contact_id}')
 async def delete_(contact_id: str):
