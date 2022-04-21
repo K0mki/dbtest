@@ -1,16 +1,10 @@
-import subprocess
 from fastapi import FastAPI, status
-from pydantic import BaseModel
 from tortoise.contrib.fastapi import register_tortoise
 from models import *
 from typing import Optional
-from tortoise import Tortoise
 
 app = FastAPI()
 
-db = []
-
-# TODO Implement other models into functions
 # TODO Search by anything function
 # TODO Tests
 
@@ -27,23 +21,18 @@ db = []
 #         DELETE          - remove contact
 
 
-@app.get("/")
+
+@app.get("/") 
 async def index():
     return {'Message': 'Go to http://127.0.0.1:8000/docs for the API doc'}
 
 
-# @app.get("/items/{item_id}")
-# async def read_item(item_id: str, q: Optional[str] = None):
-#     if q:
-#         return {"item_id": item_id, "q": q}
-#     return {"item_id": item_id}
-
-
 @app.post('/init')
 async def init():
-    # subprocess.call("./setup.sh")
 
-    lookups =  {'phone_types':{}}
+    # subprocess.call("./dropdb.sh")  #TODO ??
+
+    lookups =  {'phone_types':{}}  
     
     for pt_name in ('Mobile','Work','Home','Other'):
         pt = await PhoneType.filter(name=pt_name).get_or_none()
@@ -65,9 +54,9 @@ async def init():
     p2 = PhoneNumber( phone_number = '34567890', phone_type = lookups['phone_types']['Work'] , is_primary = 'True', contact_id = c2.id, note = "Glavni broj" )
     await p2.save()
 
-    return print ("Database created") 
+    return ("Database created") 
 
-@app.post('/types')
+@app.post('/contacts/types')
 async def add_phone_type(phone: PhoneTypeIn_Pydantic):
     lookups =  {'phone_types':{}}
     
@@ -83,6 +72,7 @@ async def add_phone_type(phone: PhoneTypeIn_Pydantic):
     return {"Created phone type":{name}}
 
 
+# TODO Returns code 200 OK when wron phone type is entered
 @app.post('/contacts')
 async def add_contact(
     first_name:str, last_name:str, phone_number:str,phone_type:str, is_primary:bool, note:Optional[str] = None 
@@ -99,17 +89,23 @@ async def add_contact(
     await phone.save()
     return {"Created contact":{first_name}}
 
+# TODO Returns code 200 OK when wron phone type is entered
+@app.post('/contacts/phones')
+async def add_phone(
+    contact_id:str,phone_number:str,phone_type:str, is_primary:bool, note:Optional[str] = None 
+):
+    lookups =  {'phone_types':{}}
+    pt = await PhoneType.filter(name=phone_type.capitalize()).get_or_none()
+    if not pt: 
+        return{'Error':'Invalid phone type'}
+    lookups['phone_types'][phone_type]=pt    
 
-# @app.post('/contacts')
-# async def add_contact2(contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic ):
+    phone = PhoneNumber( phone_number = phone_number , phone_type = lookups['phone_types'][phone_type.capitalize()] , is_primary = is_primary , contact_id = contact_id ,note = note)
+    await phone.save()
+    return {"Added phone to contact":{contact_id}}
 
-#     contact = await Contact.create(**contact.dict(exclude_unset=True))
-#     phone = await PhoneNumber.create(**phone.dict(exclude_unset=True))
-#     name = contact.first_name
-#     return {"Created contact":{name}}
-
-
-@app.get("/info") 
+# TODO Needs formating
+@app.get("/contacts/info") 
 async def all_info():
     contacts = await Contact_Pydantic.from_queryset(Contact.all())
     phones = await Phone_Pydantic.from_queryset(PhoneNumber.all())
@@ -117,26 +113,28 @@ async def all_info():
     return {'Phone types' :types} , {'Contacts':contacts} , {'Phone numbers':phones}
 
 
-@app.get("/types") 
+@app.get("/contacts//types") 
 async def all_types():                                                                                
     return await PhoneType_Pydantic.from_queryset(PhoneType.all())
 
 
-@app.get("/contacts") 
+@app.get("/contacts/all") 
 async def all_contacts():                                                                                
     return await Contact_Pydantic.from_queryset(Contact.all())
 
 
-@app.get("/phones") 
+@app.get("/contacts/phones") 
 async def all_phones():                                                                                
     return await Phone_Pydantic.from_queryset(PhoneNumber.all())
 
 
-
-@app.put("/contacts/{contact_id}",response_model=Contact_Pydantic,status_code=status.HTTP_200_OK)
-async def update_contact(contact_id: str , update_c:ContactIn_Pydantic, update_p:PhoneIn_Pydantic, update_t:PhoneTypeIn_Pydantic):
+#TODO Add other models to update, add PATCH
+@app.put("/contacts/update/{contact_id}",response_model=Contact_Pydantic,status_code=status.HTTP_200_OK)
+async def update_contact(contact_id: str , update_c:ContactIn_Pydantic):
     contact = await Contact.get(id=contact_id)
     update_c = update_c.dict(exclude_unset=True)
+    # update_p = update_p.dict(exclude_unset=True)
+    # update_t = update_t.dict(exclude_unset=True)
     contact.first_name = update_c['first_name']
     contact.last_name = update_c['last_name']
     await contact.save()
@@ -153,20 +151,20 @@ async def update_contact(contact_id: str , update_c:ContactIn_Pydantic, update_p
 #     return await Contact_Pydantic.from_tortoise_orm(contact)
 
 
-@app.delete('/types/{type_id}')
+@app.delete('/contacts/types/delete/{type_id}')
 async def delete(type_id: str):
     await PhoneType.filter(id=type_id).delete()
-    return{"Contact deleted": {type_id}}
+    return{"Phone type deleted": {type_id}}
 
-@app.delete('/contacts/{contact_id}')
+@app.delete('/contacts/delete/{contact_id}')
 async def delete(contact_id: str):
     await Contact.filter(id=contact_id).delete()
     return{"Contact deleted": {contact_id}}
 
-@app.delete('/phones/{phone_id}')
+@app.delete('/contacts/phones/delete/{phone_id}')
 async def delete_phone(phone_id: str):
-    await PhoneType.filter(id=phone_id).delete()
-    return{"Phone type deleted": {phone_id}}
+    await PhoneNumber.filter(id=phone_id).delete()
+    return{"Phone deleted": {phone_id}}
 
 
 register_tortoise(
