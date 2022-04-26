@@ -7,11 +7,8 @@ class PhoneType(Model):
         table='lookup_phone_types'
     
     id = fields.UUIDField(pk=True)
-    name = fields.CharField(8)
+    name = fields.CharField(16)
     
-    def __str__(self):
-        return f'{self.id} {self.name}'
-
 
 class PhoneNumber(Model):
     class Meta:
@@ -21,10 +18,6 @@ class PhoneNumber(Model):
     phone_number = fields.TextField()
     is_primary = fields.BooleanField(null = True)                            
     note = fields.TextField(null=True)
-
-     
-    def __str__(self):
-        return f"{self.id} {self.phone_number} {self.phone_type} {self.note}"
 
 
 class Contact(Model):
@@ -37,9 +30,10 @@ class Contact(Model):
 
     phone: fields.ReverseRelation['PhoneNumber']
 
-    
-    def __str__(self):
-        return f"{self.first_name} {self.last_name} "+' '.join([f'\n   {("Primary " if pno.is_primary == True else "x  "):^9} {pno.phone_number} ({pno.phone_type.name:^6})   {pno.note:<10} ' for pno in self.phone])      
+
+contact: fields.ForeignKeyRelation[Contact] = fields.ForeignKeyField("models.Contact")
+# phone_type : fields.ForeignKeyRelation[PhoneType] = fields.ForeignKeyField("models.PhoneType")
+
 
 PhoneType_Pydantic = pydantic_model_creator(PhoneType, name='PhoneType') 
 PhoneTypeIn_Pydantic = pydantic_model_creator(PhoneType, name='PhoneTypeIn',exclude_readonly=True) 
@@ -50,5 +44,3 @@ PhoneIn_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumberIn',excl
 Contact_Pydantic = pydantic_model_creator(Contact, name='Contact')
 ContactIn_Pydantic = pydantic_model_creator(Contact, name='ContactIn',exclude_readonly=True)
 
-contact: fields.ForeignKeyRelation[Contact] = fields.ForeignKeyField("models.Contact",related_name="phone")
-phone_type : fields.ForeignKeyRelation[PhoneType] = fields.ForeignKeyField("models.PhoneType")

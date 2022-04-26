@@ -4,6 +4,13 @@ from main import app
 
 ac = AsyncClient(app=app, base_url="http://test")
 
+
+contact = {
+    "id":"1x",
+    "first_name": "Test",
+    "last_name": "Test1"
+}
+
 @pytest.mark.anyio
 async def test_index():
     response = await ac.get("/")
@@ -13,6 +20,22 @@ async def test_index():
 
 # @pytest.mark.anyio
 # async def test_init():
-#     response = await ac.get("/init")
-#     assert response.status_code == 200
+#     response = await ac.post("/init")
+#     assert response.status_code == 200 #TODO ??
 #     assert response.json() == {"Database created"}
+
+
+# @pytest.mark.anyio
+# async def test_add_phone_type():
+#     response = await ac.post("/contacts/types", json={
+#         "name" = "Test"
+#     })
+#     assert response.status_code == 200 #TODO ??
+#     assert response.json() == {"Created phone type":{}}
+
+
+@pytest.mark.anyio
+async def test_delete_contact():
+    response = await ac.delete("/contacts/{contact_id}")
+    assert response.status_code == 200
+    assert response.json() == {"Phone deleted": "{contact_id}"}
