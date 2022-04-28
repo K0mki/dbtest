@@ -172,12 +172,14 @@ async def update_contact(contact_id: str, contact: ContactIn_Pydantic, phone: Ph
     return await Contact_Pydantic.from_tortoise_orm(contact)
 
 
+# DELETE /settings/type/:id_type 
 @app.delete('/contacts/type/delete/{type_id}', tags=['phone types'], summary="Delete phone type")
 async def delete(type_id: str):
     await PhoneType.filter(id=type_id).delete()
     return{"Phone type deleted": {type_id}}
 
 
+# DELETE /contats/:id_contat
 @app.delete('/contacts/contact/delete/{contact_id}', tags=['contacts'], summary="Delete contact")
 async def delete(contact_id: str):
     await Contact.filter(id=contact_id).delete()

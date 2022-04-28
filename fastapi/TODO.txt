@@ -24,6 +24,21 @@
 
 			DELETE: [autorizovan] - unistava jwt token, odnosno izloguje korisnika
 
+	- ulogovan korisnik moze da doda tip telefona
+
+		/api/settings/phone_types
+			
+			GET: vraca sve tipove
+			POST: dodaje novi tip
+		
+		/api/setting/phone_types/:id_phone_type
+			
+			GET:
+			PATCH: menja mu ime
+			DELETE: brise ga 		( ukoliko nije vec nekom assingneovan)
+
+
+
 
 	svi dole pozivi su [autorizovani]
 		
