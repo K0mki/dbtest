@@ -1,0 +1,56 @@
+
+
+	- user management
+
+	- korisnik moze da kreira nalog (id, username, password - kriptovan (brypt)
+	- korisnik (autorizovan)					[ dodati jwt ili tako nesto ]
+		- moze da promeni lozinku
+		- da se izloguje
+
+	- svaki korisnik vidi i moze da uredjuje (dodaje, menja) samo svoje
+	  kontakte
+
+
+		/api/users		
+	
+			GET: [autorizovan] - bilo koji user moze da vidi listu svih korisnka
+			POST: [ne autorizovan] - kreira korisnika
+
+		/api/users/me
+			
+			GET: [autorizovan] - vraca mi ko sam (username)
+
+		/api/users/logout
+
+			DELETE: [autorizovan] - unistava jwt token, odnosno izloguje korisnika
+
+
+	svi dole pozivi su [autorizovani]
+		
+	-	/api/contacts
+			
+			GET: ulogovani korisnik dobija sve svoje kontakte - uzeti uobzir paginaciju
+			POST: ulogovani korisnik dodaje novi kontakt
+
+
+	-	/api/contats/:id_contact
+
+			GET: uzima sve o tom kontaktu
+			PATCH: ulogovani.. korisnik menja kontakt
+			DElete: ... brise kontakt 
+
+	- 	/api/contats/:id_contats/emails
+
+			GET: vraca listu emailova sa tog kontakta
+			POST: dodaje novi email
+			
+	-	/api/contats/:id_contacts/emails/:id_email	(..
+		/api/emails/:id_email				(ispravna ruta)
+
+			GET: uzmes samo njega
+			PATCH: menjas ga
+			DELETE: brises ga
+
+	- ista stvar za /phone_number
+
+
