@@ -1,3 +1,4 @@
+from enum import unique
 from tortoise import fields
 from tortoise.models import Model
 from tortoise.contrib.pydantic import pydantic_model_creator
@@ -8,7 +9,7 @@ class PhoneType(Model):
         table = 'lookup_phone_types'
 
     id = fields.UUIDField(pk=True)
-    name = fields.CharField(16)
+    name = fields.CharField(16,unique=True)
 
 
 class PhoneNumber(Model):
@@ -39,13 +40,8 @@ phone_type: fields.ForeignKeyRelation[PhoneType] = fields.ForeignKeyField(
 
 
 PhoneType_Pydantic = pydantic_model_creator(PhoneType, name='PhoneType')
-PhoneTypeIn_Pydantic = pydantic_model_creator(
-    PhoneType, name='PhoneTypeIn', exclude_readonly=True)
-
+PhoneTypeIn_Pydantic = pydantic_model_creator(PhoneType, name='PhoneTypeIn', exclude_readonly=True)
 Phone_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumber')
-PhoneIn_Pydantic = pydantic_model_creator(
-    PhoneNumber, name='PhoneNumberIn', exclude_readonly=True)
-
+PhoneIn_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumberIn', exclude_readonly=True)
 Contact_Pydantic = pydantic_model_creator(Contact, name='Contact')
-ContactIn_Pydantic = pydantic_model_creator(
-    Contact, name='ContactIn', exclude_readonly=True)
+ContactIn_Pydantic = pydantic_model_creator(Contact, name='ContactIn', exclude_readonly=True)

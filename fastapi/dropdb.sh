@@ -1,10 +1,10 @@
 #!/bin/bash
 
-killall -9 Python
+killall -9 python
 
 psql -U stefan template1 -c 'drop database if exists adr;' -c 'create database adr;'
 
-./start.sh
+uvicorn main:app --reload
 
 sleep 1
 

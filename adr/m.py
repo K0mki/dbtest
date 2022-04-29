@@ -108,7 +108,7 @@ async def run4_update_stefan():
         
 if __name__ == "__main__":
 
-    # run_async(run())
+#    run_async(run())
    run_async(run4_update_stefan())
 #    run_async(run3_get_stefan())
 

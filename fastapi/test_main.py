@@ -20,24 +20,24 @@ async def test_index():
         'Message': 'Go to http://127.0.0.1:8000/docs for the API doc'}
 
 
+# @pytest.mark.anyio
+# async def test_init():
+#     response = await ac.post("/init")
+#     assert response.status_code == 200  # TODO ??
+#     assert response.json() == {"Database created"}
+
+
 @pytest.mark.anyio
-async def test_init():
-    response = await ac.post("/init")
+async def test_add_phone_type():
+    response = await ac.post("/api/contacts/types/add", json={
+        "name": "Test"
+    })
     assert response.status_code == 200  # TODO ??
-    assert response.json() == {"Database created"}
+    assert response.json() == {"Created phone type": {"Test"}}
 
 
 # @pytest.mark.anyio
-# async def test_add_phone_type():
-#     response = await ac.post("/contacts/types", json={
-#         "name" = "Test"
-#     })
-#     assert response.status_code == 200 #TODO ??
-#     assert response.json() == {"Created phone type":{}}
-
-
-@pytest.mark.anyio
-async def test_delete_contact():
-    response = await ac.delete("/contacts/{contact_id}")
-    assert response.status_code == 200
-    assert response.json() == {"Phone deleted": "{contact_id}"}
+# async def test_delete_contact():
+#     response = await ac.delete("/contacts/{contact_id}")
+#     assert response.status_code == 200
+#     assert response.json() == {"Phone deleted": "{contact_id}"}
