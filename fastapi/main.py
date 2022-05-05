@@ -54,6 +54,26 @@ async def init():
 
     return {"Database": "created"}
 
+
+@app.patch("/api/contacts/{contact_id}",                # TODO Fix relations
+           response_model=Contact_Pydantic,
+           summary="Edit contact"
+           )
+async def update_contact(contact_id: str, contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic):
+
+    c = await Contact.get(id=contact_id)
+    p = await PhoneNumber.get(contact_id=contact_id)
+    c_model = ContactIn_Pydantic(**c)
+    p_model = PhoneIn_Pydantic(**p)
+    update_c = contact.dict(exclude_unset=True)
+    update_p = phone.dict(exclude_unset=True)
+    updated_c = c_model.copy(update=update_c)
+    updated_p = p_model.copy(update=update_p)
+    await Contact.filter(id=contact_id).update(**{updated_c})
+    await PhoneNumber.filter(contacts_id=contact_id).update(**{updated_p})
+    return await Contact_Pydantic.from_tortoise_orm(contact)
+
+
 @app.get("/api/contacts/all",
          summary="List all information")
 async def all_info():
@@ -62,7 +82,6 @@ async def all_info():
     phones = await Phone_Pydantic.from_queryset(PhoneNumber.all())
     types = await PhoneType_Pydantic.from_queryset(PhoneType.all())
     return {'Users': users}, {'Phone types': types}, {'Contacts': contacts}, {'Phone numbers': phones}
-
 
 
 #-----------------------USER---------------------------#
@@ -117,17 +136,6 @@ async def get_user(user: User_Pydantic = Depends(get_current_user)):
 #-------------------------------------------------------#
 
 
-@app.post('/users',
-          tags=['users'],
-          summary="Create user",
-          response_model=User_Pydantic)
-async def create_user(user: UserIn_Pydantic):
-    user_obj = User(username=user.username,
-                    password_hash=bcrypt.hash(user.password_hash))
-    await user_obj.save()
-    return await User_Pydantic.from_tortoise_orm(user_obj)
-
-
 @app.post('/api/contacts/types/add',
           tags=['phone types'],
           summary="Create phone type",
@@ -166,8 +174,10 @@ async def update_type(type_id: str, type: PhoneTypeIn_Pydantic):
 # DELETE /settings/type/:id_type
 
 
-# TODO Fix
-@app.delete('/api/contacts/{type_id}', tags=['phone types'], summary="Delete phone type", response_model=PhoneType_Pydantic)
+@app.delete('/api/contacts/{type_id}',                  # TODO Deletes type, but throws error 500
+            tags=['phone types'],
+            summary="Delete phone type",
+            response_model=PhoneType_Pydantic)
 async def delete(type_id: str):
     try:
         await PhoneType.filter(id=type_id).delete()
@@ -177,7 +187,7 @@ async def delete(type_id: str):
                             detail="Phone type doesn't exists")
 
 
-@app.post('/api/contacts/contact/add',               # TODO Fix phone_types
+@app.post('/api/contacts/contact/add',               # TODO Fix phone_types, add just contact, no phone number
           tags=['contacts'],
           summary="Create contact")
 async def add_contact(contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic):
@@ -193,10 +203,9 @@ async def add_contact(contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic):
 
     """
 
-    contact = await Contact.create(**contact.dict(exclude_unset=True))
+    contact = await Contact.create(**contact.dict())
     phone = await PhoneNumber.create(**phone.dict(exclude_unset=True))
-    name = contact.first_name
-    return {"Created contact": {name}}
+    return {"Created contact": {contact.first_name}}
 
 
 @app.get("/api/contacts/contact",
@@ -205,13 +214,6 @@ async def add_contact(contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic):
 async def all_contacts():
     contact = await Contact_Pydantic.from_queryset(Contact.all())
     return {'Contacts': contact}
-
-
-# DELETE /contats/:id_contat
-@app.delete('/api/contacts/{contact_id}', tags=['contacts'], summary="Delete contact")
-async def delete(contact_id: str):
-    await Contact.filter(id=contact_id).delete()
-    return{"Contact deleted": {contact_id}}
 
 
 @app.put("/api/contacts/{contact_id}",              # TODO Fix relations
@@ -228,11 +230,20 @@ async def update_contact(contact_id: str, contact: ContactIn_Pydantic):
     return await Contact_Pydantic.from_tortoise_orm(contact)
 
 
-@app.post('/api/contacts/phone/add',
+# DELETE /contats/:id_contat
+@app.delete('/api/contacts/{contact_id}',               # TODO Fix
+            tags=['contacts'],
+            summary="Delete contact")
+async def delete(contact_id: str):
+    await Contact.filter(id=contact_id).delete()
+    return{"Contact deleted": {contact_id}}
+
+
+@app.post('/api/contacts/phone/add',                    # TODO Fix phone_types, is_true
           tags=['phone number'],
           summary="Create phone number",
           response_model=Phone_Pydantic)
-async def add_phone(phone: PhoneIn_Pydantic):           # TODO Fix phone_types
+async def add_phone(phone: PhoneIn_Pydantic):
     try:
         phone_obj = PhoneNumber()
         await phone_obj.save()
@@ -242,21 +253,20 @@ async def add_phone(phone: PhoneIn_Pydantic):           # TODO Fix phone_types
                             detail="Phone type doesn't exist")
 
 
-@app.get("/api/contacts/phone",
+@app.get("/api/contacts/phone",                         # TODO Not listing contact ID and phone types
          tags=['phone number'],
          summary="List all phone numbers"
          )
-async def all_phones():                             # TODO Not listing contact ID and phone types
+async def all_phones():
     phone = await Phone_Pydantic.from_queryset(PhoneNumber.all())
     return {'Phones': phone}
 
 
-@app.put("/api/contacts/{phone_id}",
+@app.put("/api/contacts/{phone_id}",                    # TODO Fix relations
          tags=['phone number'],
          response_model=Phone_Pydantic,
          summary="Edit phone number"
          )
-# TODO Fix relations
 async def update_phone(phone_id: str, phone: PhoneIn_Pydantic):
     p = await Contact.get(id=phone_id)
     p_model = ContactIn_Pydantic(*p)
@@ -266,30 +276,12 @@ async def update_phone(phone_id: str, phone: PhoneIn_Pydantic):
     return await Phone_Pydantic.from_tortoise_orm(phone)
 
 
-@app.delete('/api/contacts/{phone_id}', tags=['phone number'], summary="Delete phone number")
+@app.delete('/api/contacts/{phone_id}',                   # TODO Fix relations
+            tags=['phone number'],
+            summary="Delete phone number")                
 async def delete_phone(phone_id: str):
     await PhoneNumber.filter(id=phone_id).delete()
     return{"Phone deleted": {phone_id}}
-
-
-@app.patch("/api/contacts/{contact_id}",
-           response_model=Contact_Pydantic,
-           summary="Edit contact"
-           )
-# TODO Fix relations
-async def update_contact(contact_id: str, contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic):
-
-    c = await Contact.get(id=contact_id)
-    p = await PhoneNumber.get(contact_id=contact_id)
-    c_model = ContactIn_Pydantic(**c)
-    p_model = PhoneIn_Pydantic(**p)
-    update_c = contact.dict(exclude_unset=True)
-    update_p = phone.dict(exclude_unset=True)
-    updated_c = c_model.copy(update=update_c)
-    updated_p = p_model.copy(update=update_p)
-    await Contact.filter(id=contact_id).update(**{updated_c})
-    await PhoneNumber.filter(contacts_id=contact_id).update(**{updated_p})
-    return await Contact_Pydantic.from_tortoise_orm(contact)
 
 
 register_tortoise(
