@@ -1,7 +1,6 @@
 from tortoise import fields
 from tortoise.models import Model
 from tortoise.contrib.pydantic import pydantic_model_creator
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.hash import bcrypt
 
 
@@ -18,16 +17,6 @@ class User(Model):
 
 User_Pydantic = pydantic_model_creator(User, name='User')
 UserIn_Pydantic = pydantic_model_creator(User, name='UserIn', exclude_readonly=True)
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
- 
-async def authenticate_user(username:str, password: str):
-    user = await User.get(username=username)
-    if not user:
-        return False
-    if not user.verify_password(password):
-        return False
-    return user
 
 
 class PhoneType(Model):
@@ -52,6 +41,7 @@ class PhoneNumber(Model):
     note = fields.TextField(null=True)
 
 
+    
 Phone_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumber')
 PhoneIn_Pydantic = pydantic_model_creator(PhoneNumber, name='PhoneNumberIn', exclude_readonly=True)
 
