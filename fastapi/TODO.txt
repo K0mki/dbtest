@@ -1,8 +1,14 @@
+	Tests
+	Response models		# TODO Deletes type, but throws error 500, /response_model=PhoneType_Pydantic
+	Request Body ili Header?
+	Depends()
 
+.get / vraca ceo objekat sa svim poljima
+.all / vraca sve objekte 
 
 	- user management
 
-	- korisnik moze da kreira nalog (id, username, password - kriptovan (brypt)
+	- korisnik moze da kreira nalog (id, username, password - kriptovan (bcrypt)
 	- korisnik (autorizovan)					[ dodati jwt ili tako nesto ]
 		- moze da promeni lozinku
 		- da se izloguje
@@ -48,7 +54,7 @@
 			POST: ulogovani korisnik dodaje novi kontakt
 
 
-	-	/api/contats/:id_contact
+	-	/api/contcats/:id_contact
 
 			GET: uzima sve o tom kontaktu
 			PATCH: ulogovani.. korisnik menja kontakt
