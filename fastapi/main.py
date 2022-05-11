@@ -127,11 +127,13 @@ async def get_user(user: User_Pydantic = Depends(get_current_user)):
          summary="List all information")
 async def test(contact_id : str):
     c = await Contact.get(id=contact_id)
-    p = await PhoneNumber.get(contact_id=c.id)
-    ph = await PhoneNumber.all()
-    phones = await Phone_Pydantic.from_queryset(PhoneNumber.all())
+    p = await PhoneNumber.filter(contact_id=c.id)
+ 
 
-    return ph , phones , p
+    # ph = await PhoneNumber.all()
+    # phones = await Phone_Pydantic.from_queryset(PhoneNumber.all())
+
+    return {'Contact':c} , {'Phone numbers':p}
 
 @app.get("/api/contacts/all",
          summary="List all information")
@@ -146,7 +148,7 @@ async def all_info():
 @app.post('/api/contacts/type/add',
           tags=['phone types'],
           summary="Create phone type",
-          response_model=PhoneType_Pydantic)
+          )
 async def create_phone_type(phone: PhoneTypeIn_Pydantic):
     try:
         type_obj = PhoneType(name=phone.name.capitalize())
@@ -210,10 +212,10 @@ async def create_contact(contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic, t
     """
 
     try:
-        contact = Contact(first_name=contact.first_name,
-                          last_name=contact.last_name)
+        contact = Contact(first_name=contact.first_name.capitalize(),
+                          last_name=contact.last_name.capitalize())
         await contact.save()
-        type = await PhoneType.get(name=type.name)
+        type = await PhoneType.get(name=type.name.capitalize())
         phone = PhoneNumber(phone_number=phone.phone_number, is_primary=phone.is_primary,
                             note=phone.note, contact=contact, phone_type=type)
         await phone.save()
@@ -229,10 +231,9 @@ async def create_contact(contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic, t
 async def search_contact(contact_id: str):
 
     c = await Contact.get(id=contact_id)
-    ph = await PhoneNumber.all(contact_id)
-    # p = await PhoneNumber.get(contact_id=c.id)
-    # t = await PhoneType.get(id = p.phone_type)
-    return ph 
+    p = await PhoneNumber.filter(contact_id=c.id)
+ 
+    return {'Contact':c} , {'Phone numbers':p}
 
 @app.get("/api/contacts/contacts",
          tags=['contacts'],
@@ -255,16 +256,16 @@ async def update_contact(contact_id: str, contact: ContactIn_Pydantic):
     return c
 
 
-@app.delete('/api/contacts/contactdelete/{contact_id}',
+@app.delete('/api/contacts/contact/delete/{contact_id}',
             tags=['contacts'],
             summary="Delete contact")
 async def delete_contact(contact_id: str):
     try:
-        await Contact.get_or_none(id=contact_id).delete()
+        await Contact.filter(id=contact_id).delete()
         return{"Contact deleted": {contact_id}}
     except:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Contact doesn't exist")      # TODO Doesn't return error
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,      # TODO Doesn't throw error sometimes
+                            detail="Contact doesn't exist")      
 
 
 @app.post('/api/contacts/phone/add',
@@ -293,7 +294,7 @@ async def read_phones():
     return {'Phones': phone}
 
 
-@app.put("/api/contacts/phone/edit/{phone_id}",                     
+@app.put("/api/contacts/phone/edit/{phone_id}",                   # TODO Add phone_type for editing
            tags=['phone number'],
            summary="Edit phone number"
            )

@@ -5,6 +5,8 @@
 
 .get / vraca ceo objekat sa svim poljima
 .all / vraca sve objekte 
+.filter / vraca sve objekte sa zadatim 'filterima'
+.from_queryset() / vraca pydantic model 
 
 	- user management
 
