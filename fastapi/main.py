@@ -123,17 +123,18 @@ async def get_user(user: User_Pydantic = Depends(get_current_user)):
     return user
 #-------------------------------------------------------#
 
+
 @app.get("/api/test",
          summary="List all information")
-async def test(contact_id : str):
+async def test(contact_id: str):
     c = await Contact.get(id=contact_id)
     p = await PhoneNumber.filter(contact_id=c.id)
- 
 
     # ph = await PhoneNumber.all()
     # phones = await Phone_Pydantic.from_queryset(PhoneNumber.all())
 
-    return {'Contact':c} , {'Phone numbers':p}
+    return {'Contact': c}, {'Phone numbers': p}
+
 
 @app.get("/api/contacts/all",
          summary="List all information")
@@ -183,7 +184,7 @@ async def update_type(type_id: str, type: PhoneTypeIn_Pydantic):
                             detail="Phone type already exists")
 
 
-@app.delete('/api/contacts/type/delete/{type_id}',                  
+@app.delete('/api/contacts/type/delete/{type_id}',
             tags=['phone types'],
             summary="Delete phone type")
 async def delete_type(type_id: str):
@@ -224,16 +225,18 @@ async def create_contact(contact: ContactIn_Pydantic, phone: PhoneIn_Pydantic, t
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Phone type doesn't exists")
 
-@app.get("/api/contacts/contacts/{phone_id}",                     
-           tags=['contacts'],
-           summary="Search contacts"
-           )
+
+@app.get("/api/contacts/contacts/{phone_id}",
+         tags=['contacts'],
+         summary="Search contacts"
+         )
 async def search_contact(contact_id: str):
 
     c = await Contact.get(id=contact_id)
     p = await PhoneNumber.filter(contact_id=c.id)
- 
-    return {'Contact':c} , {'Phone numbers':p}
+
+    return {'Contact': c}, {'Phone numbers': p}
+
 
 @app.get("/api/contacts/contacts",
          tags=['contacts'],
@@ -265,7 +268,7 @@ async def delete_contact(contact_id: str):
         return{"Contact deleted": {contact_id}}
     except:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,      # TODO Doesn't throw error sometimes
-                            detail="Contact doesn't exist")      
+                            detail="Contact doesn't exist")
 
 
 @app.post('/api/contacts/phone/add',
@@ -285,7 +288,7 @@ async def create_phone(contact_id: str, phone: PhoneIn_Pydantic, type: PhoneType
                             detail="Phone type doesn't exists")
 
 
-@app.get("/api/contacts/phones",                        
+@app.get("/api/contacts/phones",
          tags=['phone number'],
          summary="List all phone numbers"
          )
@@ -295,9 +298,9 @@ async def read_phones():
 
 
 @app.put("/api/contacts/phone/edit/{phone_id}",                   # TODO Add phone_type for editing
-           tags=['phone number'],
-           summary="Edit phone number"
-           )
+         tags=['phone number'],
+         summary="Edit phone number"
+         )
 async def update_phone(phone_id: str, phone: PhoneIn_Pydantic):
     p = await PhoneNumber.get(id=phone_id)
     p.phone_number = phone.phone_number
